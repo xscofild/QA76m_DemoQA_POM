@@ -16,7 +16,7 @@ public class AlertsPage extends BasePage {
     WebElement timerAlertButton;
 
     public AlertsPage verifyAlertWithtimer() {
-        clickWithJS(timerAlertButton, 0, 200);
+        click(timerAlertButton);
         Assertions.assertTrue(isAlertPresent(5));
         return this;
     }
