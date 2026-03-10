@@ -1,9 +1,11 @@
 package com.demoqa.core;
 
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 /**
  * BasePage — родительский класс для всех Page Object классов.
@@ -50,6 +52,25 @@ public class BasePage {
             click(element);         // Фокусируемся на поле
             element.clear();        // Очищаем старое значение
             element.sendKeys(text); // Вводим новый текст
+        }
+    }
+    public WebDriverWait getWait(int seconds) {
+        return new WebDriverWait(driver, Duration.ofSeconds(seconds));
+    }
+
+    public boolean isAlertPresent(int seconds) {
+        try {
+            Alert alert = getWait(seconds)
+                    .until(ExpectedConditions.alertIsPresent());
+
+            if (alert != null) {
+                alert.accept(); // нажимаем OK на алерте
+                return true;
+            }
+            return false;
+
+        } catch (TimeoutException e) {
+            return false; // алерт не появился за 20 секунд
         }
     }
 }
