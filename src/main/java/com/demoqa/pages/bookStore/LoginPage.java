@@ -5,13 +5,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-/**
- * LoginPage — страница авторизации.
- * Содержит поля для ввода логина/пароля и кнопку Login.
- *
- * Методы возвращают Page Object — это позволяет писать тест цепочкой вызовов
- * (паттерн Method Chaining / Fluent Interface).
- */
 public class LoginPage extends BasePage {
 
     public LoginPage(WebDriver driver) {
@@ -24,19 +17,17 @@ public class LoginPage extends BasePage {
     @FindBy(id = "password")
     WebElement passwordInput;
 
-    // Вводит имя и пароль. Возвращает this — чтобы продолжить цепочку вызовов
     public LoginPage enterUserData(String name, String password) {
-        typeWithJS(userNameInput, name, 0, 200);
-        typeWithJS(passwordInput, password, 0, 200);
+        type(userNameInput, name);
+        type(passwordInput, password);
         return this;
     }
 
     @FindBy(id = "login")
     WebElement loginButton;
 
-    // Кликает по кнопке Login → после логина открывается ProfilePage
     public ProfilePage clickOnLoginButton() {
-        clickWithJS(loginButton, 0, 500);
+        clickWithJS(loginButton);
         return new ProfilePage(driver);
     }
 }

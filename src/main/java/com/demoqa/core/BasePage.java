@@ -6,71 +6,66 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * BasePage — родительский класс для всех Page Object классов.
- * Содержит общие методы: клик, ввод текста, скролл через JavaScript.
- * Каждая страница наследует этот класс через extends BasePage.
- */
 public class BasePage {
 
-    protected WebDriver driver;          // WebDriver — управляет браузером
-    public static JavascriptExecutor js; // JS-исполнитель — нужен для скролла и кликов
+    protected WebDriver driver;
+    protected JavascriptExecutor js;
 
-    // Конструктор: принимает driver, инициализирует @FindBy-поля через PageFactory
     public BasePage(WebDriver driver) {
         this.driver = driver;
-        PageFactory.initElements(driver, this); // Связывает @FindBy-поля с реальными элементами
+        PageFactory.initElements(driver, this);
         js = (JavascriptExecutor) driver;
     }
 
-    // Скроллит страницу на x пикселей по горизонтали и y по вертикали
-    public void scrollWithJS(int x, int y) {
-        js.executeScript("window.scrollBy(" + x + "," + y + ")");
+    // scrollIntoView + клик
+    public void clickWithJS(WebElement element) {
+        js.executeScript("arguments[0].scrollIntoView({block: 'center'}); arguments[0].click();", element);
     }
 
-    // Скроллит до нужной позиции, затем кликает по элементу
-    public void clickWithJS(WebElement element, int x, int y) {
-        scrollWithJS(x, y);
-        click(element);
-    }
-
-    // Скроллит до нужной позиции, затем вводит текст в элемент
-    public void typeWithJS(WebElement element, String text, int x, int y) {
-        scrollWithJS(x, y);
-        type(element, text);
-    }
-
-    // Простой клик по элементу
     public void click(WebElement element) {
         element.click();
     }
 
-    // Кликает на поле, очищает его и вводит текст. Если text == null — ничего не делает
     public void type(WebElement element, String text) {
         if (text != null) {
-            click(element);         // Фокусируемся на поле
-            element.clear();        // Очищаем старое значение
-            element.sendKeys(text); // Вводим новый текст
+            click(element);
+            element.clear();
+            element.sendKeys(text);
         }
     }
+
     public WebDriverWait getWait(int seconds) {
         return new WebDriverWait(driver, Duration.ofSeconds(seconds));
     }
 
+    // ожидание появления alert
+    public Alert getAlert(int seconds) {
+        return getWait(seconds).until(ExpectedConditions.alertIsPresent());
+    }
+
     public boolean isAlertPresent(int seconds) {
         try {
-            Alert alert = getWait(seconds)
-                    .until(ExpectedConditions.alertIsPresent());
-
-            if (alert != null) {
-                alert.accept(); // нажимаем OK на алерте
-                return true;
-            }
-            return false;
-
+            getAlert(seconds).accept();
+            return true;
         } catch (TimeoutException e) {
-            return false; // алерт не появился за 20 секунд
+            return false;
         }
+    }
+
+    public boolean isContainsText(String text, WebElement element) {
+        getWait(5).until(ExpectedConditions.visibilityOf(element));
+        return element.getText().contains(text);
+    }
+
+    public boolean shouldHaveText(WebElement element, String text, int seconds) {
+        return getWait(seconds).until(ExpectedConditions.textToBePresentInElement(element, text));
+    }
+
+    public void switchToNewTabWindow(int index) {
+        List<String> tabs = new ArrayList<>(driver.getWindowHandles());
+        driver.switchTo().window(tabs.get(index));
     }
 }
