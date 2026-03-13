@@ -20,7 +20,8 @@ public class FramesPage extends BasePage {
     public FramesPage returnListOfIframes() {
         System.out.println("Iframes by WebElements: " + iframes.size());
 
-        int count = Integer.parseInt(js.executeScript("return window.frames.length").toString());
+        Object jsResult = js.executeScript("return window.frames.length");
+        int count = jsResult != null ? Integer.parseInt(jsResult.toString()) : 0;
         System.out.println("Iframes by JS: " + count);
 
         return this;
@@ -34,14 +35,12 @@ public class FramesPage extends BasePage {
     @FindBy(id = "frame1")
     WebElement frame1;
 
-    // переключение в iframe по id
     public FramesPage switchToIframeById() {
         driver.switchTo().frame(frame1);
         return this;
     }
 
-    // возврат на основную страницу из iframe
-    public FramesPage switchToDefaultContent() {
+    public FramesPage switchToMainPage() {
         driver.switchTo().defaultContent();
         return this;
     }
@@ -52,5 +51,16 @@ public class FramesPage extends BasePage {
     public FramesPage verifyIframeByTitle(String title) {
         Assertions.assertTrue(isContainsText(title, sampleHeading));
         return this;
+    }
+
+    @FindBy(css = ".text-center")
+    WebElement textCenter;
+
+    public FramesPage verifyMainPageTitle(String text) {
+        Assertions.assertTrue(isContainsText(text, textCenter));
+        return this;
+    }
+
+    public void handleNestedFrames() {
     }
 }

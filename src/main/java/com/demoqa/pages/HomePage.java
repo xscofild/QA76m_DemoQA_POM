@@ -11,7 +11,6 @@ public class HomePage extends BasePage {
         super(driver);
     }
 
-    // поиск карточки по тексту заголовка — не зависит от порядка карточек на странице
     @FindBy(xpath = "//h5[text()='Book Store Application']/..")
     WebElement bookStore;
 
@@ -33,6 +32,14 @@ public class HomePage extends BasePage {
 
     public SidePanel selectAlertsFrameWindows() {
         clickWithJS(alertsFrameWindows);
+        return new SidePanel(driver);
+    }
+
+    @FindBy(xpath = "//h5[normalize-space()='Widgets']/..")
+    WebElement widgets;
+
+    public SidePanel selectWidgets() {
+        clickWithJS(widgets);
         return new SidePanel(driver);
     }
 }
