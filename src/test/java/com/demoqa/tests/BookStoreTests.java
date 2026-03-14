@@ -10,29 +10,28 @@ import org.junit.jupiter.api.Test;
 /**
  * BookStoreTests — тесты для раздела Book Store.
  *
- * @BeforeEach — выполняется перед каждым тестом (предусловие)
- * @Test       — сам тест: шаги пользователя + проверка результата
+ * Обрати внимание: здесь нет полей SidePanel/LoginPage на уровне класса.
+ * Объекты создаются прямо в теле теста и связываются цепочкой (Method Chaining).
+ * Это чище когда тест линейный и объект нужен только в одном месте.
  *
- * Method Chaining: каждый метод возвращает следующий Page Object,
- * что позволяет писать тест как читаемую цепочку шагов.
+ * Сравни с AlertsFrameWindowsTests где объекты — поля класса.
+ * Оба подхода рабочие; поля класса удобны когда один объект используется в нескольких тестах.
  */
 public class BookStoreTests extends TestBase {
 
-    // Открывает раздел Book Store перед каждым тестом
     @BeforeEach
     public void precondition() {
-        new HomePage(driver).selectBookStore();
+        new HomePage(driver).selectBookStore(); // открываем раздел Book Store
     }
 
     @Test
     public void loginPositiveTest() {
-        // Шаг 1: В боковом меню кликаем Login
-        new SidePanel(driver).selectLogin();
+        new SidePanel(driver).selectLogin();  // кликаем Login в боковом меню → переходим на LoginPage
 
-        // Шаг 2: Вводим данные → кликаем Login → проверяем имя на странице профиля
+        // enterUserData → clickOnLoginButton (возвращает ProfilePage) → verifyUserName
         new LoginPage(driver)
                 .enterUserData("xscofild", "Qwertz123!")
-                .clickOnLoginButton()
+                .clickOnLoginButton()   // → возвращает ProfilePage
                 .verifyUserName("xscofild");
     }
 }
