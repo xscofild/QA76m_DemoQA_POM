@@ -14,7 +14,7 @@ public class DropdownPage extends BasePage {
     }
 
     @FindBy(id = "dropdown")
-    private WebElement dropdown;
+    WebElement dropdown;
 
     public DropdownPage selectOption(String value) {
         new Select(dropdown).selectByValue(value);

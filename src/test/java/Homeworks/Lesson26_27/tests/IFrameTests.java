@@ -7,11 +7,13 @@ import org.junit.jupiter.api.Test;
 public class IFrameTests extends TestBase {
 
     @Test
-    public void typeTextInIFrameTest() {
+    public void testIFrame() {
         new IFramePage(driver)
-                .open()
-                .switchToEditor()
-                .clearAndType("Hello QA!")
-                .verifyText("Hello QA!");
+                .clickFrames()
+                .clickIFrame()
+                .switchToIFrame()
+                .verifyTextInIFrame("Your content goes here.")
+                .switchToMainPage();
     }
+
 }
