@@ -2,13 +2,16 @@ package Homeworks.Lesson24_25.tests;
 
 import Homeworks.Lesson24_25.core.TestBase;
 import Homeworks.Lesson24_25.pages.HomePage;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class JavaScriptAlertsTests extends TestBase {
 
+    // Тест сценарий:
+    //  1. Переходим на страницу JavaScript Alerts
+    //  2. Нажимаем кнопку "Click for JS Alert"
+    //  3. Принимаем alert (нажимаем OK)
+    //  4. Проверяем что результат содержит "You successfully clicked an alert"
     @Test
-    @DisplayName("Verify result text after accepting JS Alert")
     public void jsAlertTest() {
         new HomePage(driver)
                 .goToJavaScriptAlertsPage()
@@ -17,8 +20,12 @@ public class JavaScriptAlertsTests extends TestBase {
                 .verifyResultText("You successfully clicked an alert");
     }
 
+    // Тест сценарий:
+    //  1. Переходим на страницу JavaScript Alerts
+    //  2. Нажимаем кнопку "Click for JS Confirm"
+    //  3. Принимаем confirm alert (нажимаем OK)
+    //  4. Проверяем что результат содержит "You clicked: Ok"
     @Test
-    @DisplayName("Verify result text after accepting JS Confirm")
     public void jsConfirmOkTest() {
         new HomePage(driver)
                 .goToJavaScriptAlertsPage()
@@ -27,8 +34,12 @@ public class JavaScriptAlertsTests extends TestBase {
                 .verifyResultText("You clicked: Ok");
     }
 
+    // Тест сценарий:
+    //  1. Переходим на страницу JavaScript Alerts
+    //  2. Нажимаем кнопку "Click for JS Confirm"
+    //  3. Отклоняем confirm alert (нажимаем Cancel)
+    //  4. Проверяем что результат содержит "You clicked: Cancel"
     @Test
-    @DisplayName("Verify result text after dismissing JS Confirm")
     public void jsConfirmCancelTest() {
         new HomePage(driver)
                 .goToJavaScriptAlertsPage()
@@ -37,8 +48,12 @@ public class JavaScriptAlertsTests extends TestBase {
                 .verifyResultText("You clicked: Cancel");
     }
 
+    // Тест сценарий:
+    //  1. Переходим на страницу JavaScript Alerts
+    //  2. Нажимаем кнопку "Click for JS Prompt"
+    //  3. Вводим текст "hello1" в поле prompt и нажимаем OK
+    //  4. Проверяем что результат содержит "You entered: hello1"
     @Test
-    @DisplayName("Verify entered text after accepting JS Prompt")
     public void jsPromptTest() {
         new HomePage(driver)
                 .goToJavaScriptAlertsPage()
