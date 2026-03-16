@@ -13,10 +13,10 @@ public class DragAndDropPage extends BasePage {
     }
 
     @FindBy(id = "column-a")
-    private WebElement columnA;
+    WebElement columnA;
 
     @FindBy(id = "column-b")
-    private WebElement columnB;
+    WebElement columnB;
 
     public DragAndDropPage dragAtoB() {
         actions.dragAndDrop(columnA, columnB).perform();

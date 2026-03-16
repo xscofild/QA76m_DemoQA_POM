@@ -17,7 +17,7 @@ public class HoversPage extends BasePage {
     }
 
     @FindBy(css = ".figure")
-    private List<WebElement> figures;
+    List<WebElement> figures;
 
     public HoversPage hoverOverFigure(int index) {
         WebElement figure = figures.get(index);
@@ -28,10 +28,10 @@ public class HoversPage extends BasePage {
         return this;
     }
 
-    public HoversPage verifyCaptionVisible(int index, String expectedText) {
+    public HoversPage verifyCaptionVisible(int index, String expectedName) {
         WebElement caption = figures.get(index).findElement(By.cssSelector(".figcaption h5"));
         Assertions.assertTrue(caption.isDisplayed());
-        Assertions.assertEquals("name: " + expectedText, caption.getText());
+        Assertions.assertEquals("name: " + expectedName, caption.getText());
         return this;
     }
 }

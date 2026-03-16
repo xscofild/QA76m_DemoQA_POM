@@ -12,16 +12,19 @@ public class HomePage extends BasePage {
     }
 
     @FindBy(linkText = "Dropdown")
-    private WebElement dropdownLink;
+    WebElement dropdownLink;
 
     @FindBy(linkText = "Drag and Drop")
-    private WebElement dragAndDropLink;
+    WebElement dragAndDropLink;
 
     @FindBy(linkText = "Horizontal Slider")
-    private WebElement sliderLink;
+    WebElement sliderLink;
 
     @FindBy(linkText = "Hovers")
-    private WebElement hoversLink;
+    WebElement hoversLink;
+
+    @FindBy(linkText = "Frames")
+    WebElement framesLink;
 
     public DropdownPage goToDropdownPage() {
         click(dropdownLink);
@@ -41,5 +44,10 @@ public class HomePage extends BasePage {
     public HoversPage goToHoversPage() {
         click(hoversLink);
         return new HoversPage(driver);
+    }
+
+    public FramesPage goToFramesPage() {
+        click(framesLink);
+        return new FramesPage(driver);
     }
 }

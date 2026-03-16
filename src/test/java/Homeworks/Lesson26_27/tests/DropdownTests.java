@@ -6,6 +6,10 @@ import org.junit.jupiter.api.Test;
 
 public class DropdownTests extends TestBase {
 
+    // Тест сценарий:
+    //  1. Переходим на страницу Dropdown
+    //  2. Выбираем Option 1 из выпадающего списка
+    //  3. Проверяем что Option 1 стал выбранным
     @Test
     public void selectOption1Test() {
         new HomePage(driver)
@@ -14,6 +18,10 @@ public class DropdownTests extends TestBase {
                 .verifySelectedOption("Option 1");
     }
 
+    // Тест сценарий:
+    //  1. Переходим на страницу Dropdown
+    //  2. Выбираем Option 2 из выпадающего списка
+    //  3. Проверяем что Option 2 стал выбранным
     @Test
     public void selectOption2Test() {
         new HomePage(driver)

@@ -14,7 +14,7 @@ public class SliderPage extends BasePage {
     }
 
     @FindBy(css = "input[type='range']")
-    private WebElement slider;
+    WebElement slider;
 
     public SliderPage moveSliderRight(int times) {
         for (int i = 0; i < times; i++) {
