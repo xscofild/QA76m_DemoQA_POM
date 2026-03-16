@@ -2,28 +2,35 @@ package Homeworks.Lesson23.tests;
 
 import Homeworks.Lesson23.core.TestBase;
 import Homeworks.Lesson23.pages.HomePage;
-import Homeworks.Lesson23.pages.LoginPage;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class LoginTests extends TestBase {
 
-    @BeforeEach
-    public void precondition() {
-        new HomePage(driver).goToLoginPage();
-    }
-
+    // Тест сценарий:
+    //  1. Переходим на страницу Form Authentication
+    //  2. Вводим корректные логин и пароль
+    //  3. Нажимаем Login
+    //  4. Проверяем что появилось сообщение "You logged into a secure area"
     @Test
     public void loginPositiveTest() {
-        new LoginPage(driver)
+        new HomePage(driver)
+                .goToLoginPage()
                 .enterCredentials("tomsmith", "SuperSecretPassword!")
-                .clickLogin();
+                .clickLogin()
+                .verifyLoginSuccess();
     }
 
+    // Тест сценарий:
+    //  1. Переходим на страницу Form Authentication
+    //  2. Вводим корректный логин и неверный пароль
+    //  3. Нажимаем Login
+    //  4. Проверяем что появилось сообщение "Your password is invalid"
     @Test
     public void loginNegativeTest() {
-        new LoginPage(driver)
+        new HomePage(driver)
+                .goToLoginPage()
                 .enterCredentials("tomsmith", "wrongpassword")
-                .clickLogin();
+                .clickLogin()
+                .verifyLoginFailed();
     }
 }

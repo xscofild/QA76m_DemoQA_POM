@@ -26,8 +26,8 @@ public class LoginPage extends BasePage {
         return this;
     }
 
-    public LoginPage clickLogin() {
+    public SecurePage clickLogin() {
         click(loginButton);
-        return this;
+        return new SecurePage(driver);
     }
 }
