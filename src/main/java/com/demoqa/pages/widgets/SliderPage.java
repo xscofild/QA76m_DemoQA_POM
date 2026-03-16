@@ -2,43 +2,61 @@ package com.demoqa.pages.widgets;
 
 import com.demoqa.core.BasePage;
 import org.junit.jupiter.api.Assertions;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-/**
- * SliderPage — работа со слайдером через Actions (drag & hold).
- *
- * Слайдер нельзя заполнить через sendKeys или click — только через мышиное перетаскивание.
- * moveByOffset(x, y): смещение в пикселях относительно текущей позиции мыши.
- * x=40 → сдвигает вправо на 40px. Результирующее значение зависит от ширины слайдера на странице.
- *
- * Хрупкость: offset в пикселях зависит от разрешения/зума браузера → тест может давать разные значения.
- * Для стабильности лучше рассчитывать offset динамически от ширины элемента.
- */
+// Страница "Slider" в разделе Widgets
+// Демонстрирует управление HTML range input через клавиши Arrow
+//
+// Почему не dragAndDropBy() как было на лекции:
+//   dragAndDropBy() ненадёжен — результат зависит от разрешения экрана и браузера
+// Более стабильный способ:
+//   1. Читаем текущее значение слайдера
+//   2. Нажимаем ARROW_RIGHT (увеличить) или ARROW_LEFT (уменьшить)
+//   3. Повторяем пока не достигнем нужного значения
+//
+// getAttribute("value") — читает текущее значение input[type='range'] из DOM
 public class SliderPage extends BasePage {
 
     public SliderPage(WebDriver driver) {
         super(driver);
     }
 
+    // Сам слайдер — input[type='range']
+    // .range-slider — CSS класс слайдера на странице demoqa
     @FindBy(css = ".range-slider")
     WebElement rangeSlider;
 
-    public SliderPage moveSlider() {
-        js.executeScript("arguments[0].scrollIntoView({block: 'center'});", rangeSlider);
+    // Числовое поле которое отображает текущее значение слайдера
+    @FindBy(id = "sliderValue")
+    WebElement sliderValue;
 
-        actions.clickAndHold(rangeSlider)   // зажимаем левую кнопку мыши на слайдере
-                .moveByOffset(40, 0)        // тянем вправо на 40px (y=0 — не двигаем по вертикали)
-                .release()                  // отпускаем мышь
-                .perform();
-
+    // Устанавливает значение слайдера нажатиями клавиш Arrow
+    // Шаги:
+    //  1. Читаем текущее значение через getAttribute("value")
+    //  2. Если текущее < целевого — жмём ARROW_RIGHT (увеличить на 1)
+    //  3. Если текущее > целевого — жмём ARROW_LEFT  (уменьшить на 1)
+    //  4. Повторяем пока не достигнем targetValue
+    public SliderPage moveSlider(int targetValue) {
+        scrollToElement(rangeSlider);
+        int currentValue = Integer.parseInt(rangeSlider.getAttribute("value"));
+        while (currentValue < targetValue) {
+            rangeSlider.sendKeys(Keys.ARROW_RIGHT);
+            currentValue++;
+        }
+        while (currentValue > targetValue) {
+            rangeSlider.sendKeys(Keys.ARROW_LEFT);
+            currentValue--;
+        }
         return this;
     }
 
-    // getAttribute("value") — читает текущее значение input[type=range] из DOM-атрибута.
-    public SliderPage verifySliderValue(String value) {
-        Assertions.assertEquals(value, rangeSlider.getAttribute("value"));
+    // Проверяет что числовое поле отображает ожидаемое значение
+    // getDomAttribute("value") — читает value атрибут элемента напрямую из DOM
+    public SliderPage verifySliderValue(String number) {
+        Assertions.assertEquals(number, sliderValue.getDomAttribute("value"));
         return this;
     }
 }

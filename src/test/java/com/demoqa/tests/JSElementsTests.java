@@ -7,15 +7,9 @@ import com.demoqa.pages.SidePanel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * JSElementsTests — демонстрация возможностей JavascriptExecutor.
- *
- * Один тест покрывает всю цепочку: заполнение формы → сабмит → получение данных страницы
- * → обновление → навигация на другую страницу → получение title.
- *
- * Это скорее демонстрационный тест (show-case), а не изолированный unit-тест.
- * В продакшн-тестировании лучше разбивать на отдельные тесты с чёткими assertions.
- */
+// Тесты демонстрирующие работу с JavaScript через JavascriptExecutor
+// Покрывает: заполнение полей через JS, клик через JS, навигация через JS
+// @BeforeEach — переходим в раздел Elements
 public class JSElementsTests extends TestBase {
 
     SidePanel sidePanel;
@@ -26,18 +20,25 @@ public class JSElementsTests extends TestBase {
         sidePanel = new SidePanel(driver);
     }
 
+    // Тест: заполнение формы Text Box через JavascriptExecutor
+    // Шаги:
+    //  1. Переходим на страницу Text Box
+    //  2. Заполняем поля через JS (document.getElementById)
+    //  3. Нажимаем Submit через JS (document.querySelector.click())
+    //  4. Получаем innerText и URL через JS
+    //  5. Обновляем страницу через JS (history.go(0))
+    //  6. Переходим на новую страницу через JS (window.location)
+    //  7. Получаем title страницы через JS (document.title)
     @Test
     public void jsExecutorTest() {
-        sidePanel.selectTextBox();  // переходим на Text Box страницу
-
+        sidePanel.selectTextBox();
         new JSExecutor(driver)
-                .enterPersonalData("Serdar Kerimov", "Test@gmail.com")  // JS заполнение полей
-                .clickOnSubmitButton()          // JS клик + изменение стиля кнопки
-                .getInnerText()                 // выводит весь текст страницы в консоль
-                .verifyURL()                    // выводит текущий URL в консоль
-                .refreshPage()                  // history.go(0) → перезагрузка
-                .navigateToNewTab("https://telranedu.web.app/")  // навигация в той же вкладке (название метода misleading!)
-                .verifyNewPageFaveIconTitle()   // выводит <title> новой страницы в консоль
-        ;
+                .enterPersonalData("Olga Podgornaya", "Test@gmail.com")
+                .clickOnSubmitButton()
+                .getInnerText()
+                .verifyURL()
+                .refreshPage()
+                .navigateToNewPage("https://telranedu.web.app") // открывает новую ссылку в том же окне
+                .verifyNewPageFaveIconTitle();
     }
 }

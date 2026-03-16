@@ -8,79 +8,89 @@ import org.openqa.selenium.support.FindBy;
 
 import java.util.List;
 
-/**
- * FramesPage — работа с iframe на странице.
- *
- * КРИТИЧЕСКИ ВАЖНО про iframe:
- * По умолчанию Selenium видит только элементы основного документа (main content).
- * Чтобы взаимодействовать с элементами внутри iframe — нужно переключиться в него (switchTo().frame()).
- * Чтобы вернуться к основному документу — switchTo().defaultContent().
- * Если забыть вернуться → все последующие findElement() будут искать внутри iframe → NoSuchElementException.
- *
- * Используется для ДВУХ страниц: Frames и Nested Frames (оба через SidePanel возвращают FramesPage).
- */
+// Страница "Frames" в разделе Alerts, Frame & Windows
+// Демонстрирует работу с HTML iframes в Selenium
+//
+// iframe — встроенный HTML-документ внутри основного документа
+// По умолчанию Selenium работает с основным DOM
+// Чтобы взаимодействовать с элементами ВНУТРИ iframe — нужно переключиться:
+//   driver.switchTo().frame(...)        — переход внутрь iframe
+//   driver.switchTo().defaultContent()  — возврат в основной DOM
+//
+// Способы переключения:
+//  1. По индексу      — frame(0), frame(1) ...
+//  2. По WebElement   — frame(webElement) используя id/name атрибут
 public class FramesPage extends BasePage {
 
     public FramesPage(WebDriver driver) {
         super(driver);
     }
 
+    // Список всех iframe на странице (css = "iframe" собирает все элементы с тегом iframe)
     @FindBy(css = "iframe")
-    List<WebElement> iframes;  // находит все iframe на странице
+    List<WebElement> iframes;
 
-    // Диагностический метод: выводит количество iframe двумя способами для сравнения.
-    // WebElements считает через DOM, JS — через window.frames (может отличаться для динамических iframe).
+    // Конкретный iframe с id="frame1"
+    @FindBy(id = "frame1")
+    WebElement frame1;
+
+    // Заголовок внутри iframe (искать только ПОСЛЕ переключения в iframe)
+    @FindBy(id = "sampleHeading")
+    WebElement sampleHeading;
+
+    // Заголовок основной страницы (искать только ПОСЛЕ switchToMainPage)
+    @FindBy(css = ".text-center")
+    WebElement textCenter;
+
+    // ─── Утилиты ───────────────────────────────────────────
+
+    // Выводит количество найденных iframe двумя способами:
+    // 1. Через Selenium List size()
+    // 2. Через JavaScript window.length
     public FramesPage returnListOfIframes() {
-        System.out.println("Iframes by WebElements: " + iframes.size());
-
-        Object jsResult = js.executeScript("return window.frames.length");
-        int count = jsResult != null ? Integer.parseInt(jsResult.toString()) : 0;
-        System.out.println("Iframes by JS: " + count);
-
+        System.out.println("Количество iframe (Selenium): " + iframes.size());
+        int numberOfIframes = Integer.parseInt(js.executeScript("return window.length").toString());
+        System.out.println("Количество iframe (JS): " + numberOfIframes);
         return this;
     }
 
-    // Переключается в iframe по порядковому номеру (0-based индекс на странице).
-    // Хрупкий способ: если порядок iframe изменится на странице — тест сломается.
+    // ─── Переключение в iframe ─────────────────────────────
+
+    // Переключается в iframe по числовому индексу
+    // Индексация с 0: первый iframe = 0, второй = 1
     public FramesPage switchToIframeByIndex(int index) {
         driver.switchTo().frame(index);
         return this;
     }
 
-    @FindBy(id = "frame1")
-    WebElement frame1;
-
-    // Переключается в конкретный iframe по его WebElement — надёжнее чем по индексу.
+    // Переключается в iframe через WebElement (по id="frame1")
+    // Более явный и стабильный способ чем по индексу
     public FramesPage switchToIframeById() {
         driver.switchTo().frame(frame1);
         return this;
     }
 
-    // Возврат из iframe в основной документ. ОБЯЗАТЕЛЬНО вызывать после работы с iframe.
+    // Возвращается в основной DOM страницы
+    // defaultContent() — обязательно вызывать после работы с iframe
+    // иначе Selenium продолжит искать элементы внутри iframe
     public FramesPage switchToMainPage() {
         driver.switchTo().defaultContent();
         return this;
     }
 
-    // Элемент ВНУТРИ iframe. Доступен только после switchToIframe*, иначе — NoSuchElementException.
-    @FindBy(id = "sampleHeading")
-    WebElement sampleHeading;
+    // ─── Проверки ──────────────────────────────────────────
 
+    // Проверяет заголовок внутри iframe
+    // ВАЖНО: вызывать только после switchToIframe — иначе элемент не найден
     public FramesPage verifyIframeByTitle(String title) {
         Assertions.assertTrue(isContainsText(title, sampleHeading));
         return this;
     }
 
-    // Элемент основного документа. Доступен только после switchToMainPage(), иначе — NoSuchElementException.
-    @FindBy(css = ".text-center")
-    WebElement textCenter;
-
+    // Проверяет заголовок основной страницы
+    // ВАЖНО: вызывать только после switchToMainPage()
     public FramesPage verifyMainPageTitle(String text) {
         Assertions.assertTrue(isContainsText(text, textCenter));
         return this;
-    }
-
-    // Заглушка для вложенных фреймов. Тест с этим методом отключён через @Disabled.
-    public void handleNestedFrames() {
     }
 }

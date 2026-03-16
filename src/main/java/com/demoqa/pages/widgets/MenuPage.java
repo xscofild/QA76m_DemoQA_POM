@@ -6,47 +6,49 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-import java.time.Duration;
-
-/**
- * MenuPage — работа с вложенным hover-меню.
- *
- * Меню раскрывается только при наведении мыши (CSS hover), поэтому нужен Actions.
- * Цепочка: hover на mainItem2 → появляется subSubList → hover на него → появляется subSubItem1.
- * pause() между шагами — имитация человеческой задержки, без неё меню не успевает раскрыться.
- *
- * Если убрать pause() → подменю может не успеть появиться → MoveTargetOutOfBoundsException или NoSuchElementException.
- * Если убрать scrollTo(0,0) → страница может быть прокручена вниз → hover не попадёт в нужную позицию.
- */
+// Страница "Menu" в разделе Widgets
+// Демонстрирует работу с hover-меню (выпадающими пунктами при наведении мыши)
+//
+// actions.moveToElement() — симулирует наведение курсора на элемент
+// Это вызывает CSS :hover эффект и показывает вложенные пункты меню
+//
+// Цепочка наведений: Main Item 2 → SUB SUB LIST → Sub Sub Item 1
+// Каждый следующий пункт появляется только после наведения на предыдущий
 public class MenuPage extends BasePage {
 
     public MenuPage(WebDriver driver) {
         super(driver);
     }
 
+    // Пункт главного меню
     @FindBy(xpath = "//a[.='Main Item 2']")
-    private WebElement mainItem2;
+    WebElement mainItem2;
 
+    // Вложенный пункт — появляется после наведения на Main Item 2
     @FindBy(xpath = "//a[.='SUB SUB LIST »']")
-    private WebElement subSubList;
+    WebElement subSubList;
 
+    // Финальный вложенный пункт — появляется после наведения на SUB SUB LIST
     @FindBy(xpath = "//a[.='Sub Sub Item 1']")
-    private WebElement subSubItem1;
+    WebElement subSubItem1;
 
+    // Наводит мышь по цепочке пунктов вложенного меню
+    // scrollIntoView — прокручиваем к элементу перед hover
+    // Вся цепочка в одном .perform() — Actions не теряет фокус между шагами
     public MenuPage hoverMouseOnSubMenu() {
-        js.executeScript("window.scrollTo(0, 0)");  // прокрутка в начало страницы перед hover
-
-        actions
-                .moveToElement(mainItem2)               // наводим на Main Item 2 → открывается подменю
-                .pause(Duration.ofMillis(100))          // ждём рендер подменю
-                .moveToElement(subSubList)              // наводим на SUB SUB LIST → открывается вложенное подменю
-                .pause(Duration.ofMillis(100))
-                .moveToElement(subSubItem1)             // наводим на конечный пункт
-                .perform();                             // perform() выполняет всю накопленную цепочку actions
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", mainItem2);
+        actions.moveToElement(mainItem2)
+                .moveToElement(subSubList)
+                .moveToElement(subSubItem1)
+                .perform();
         return this;
     }
 
+    // Проверяет что финальный пункт Sub Sub Item 1 стал видимым
+    // waitOfElementVisibility() — ждёт появления элемента до 20 секунд
+    // isElementVisible() — проверяет isDisplayed()
     public MenuPage verifySubMenu() {
+        waitOfElementVisibility(subSubItem1, 20);
         Assertions.assertTrue(isElementVisible(subSubItem1));
         return this;
     }

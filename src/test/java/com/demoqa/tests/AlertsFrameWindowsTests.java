@@ -7,92 +7,85 @@ import com.demoqa.pages.alertsFrameWindows.AlertsPage;
 import com.demoqa.pages.alertsFrameWindows.FramesPage;
 import com.demoqa.pages.alertsFrameWindows.WindowsPage;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/**
- * AlertsFrameWindowsTests — тесты для раздела Alerts, Frame & Windows.
- *
- * Архитектурный момент: объекты страниц создаются ДВАЖДЫ:
- *   1. В preconditions() через new HomePage(driver).selectAlertsFrameWindows() → возвращает SidePanel
- *      (но этот SidePanel не сохраняется — результат selectAlertsFrameWindows() игнорируется!)
- *   2. Отдельно: sidePanel = new SidePanel(driver), alerts = new AlertsPage(driver) и т.д.
- *
- * Это избыточно но работает — PageFactory инициализирует @FindBy при создании объекта,
- * и все объекты работают с одним и тем же driver (одна и та же вкладка браузера).
- * Можно было сохранить результат selectAlertsFrameWindows() как sidePanel и не создавать заново.
- */
+// Тесты для раздела "Alerts, Frame & Windows"
+// Покрывает: Timer Alert, Confirm Alert, Prompt Alert, Browser Windows, Frames
+// @BeforeEach — переходим в раздел и создаём нужные Page Objects для всех тестов
 public class AlertsFrameWindowsTests extends TestBase {
 
     SidePanel sidePanel;
     AlertsPage alerts;
     FramesPage frame;
-    WindowsPage windows;
 
     @BeforeEach
-    public void preconditions() {
-        new HomePage(driver).selectAlertsFrameWindows(); // кликает по карточке раздела → открывает SidePanel
+    public void precondition() {
+        new HomePage(driver).selectAlertsFrameWindows();
         sidePanel = new SidePanel(driver);
         alerts = new AlertsPage(driver);
         frame = new FramesPage(driver);
-        windows = new WindowsPage(driver);
     }
 
+    // Тест: timer alert появляется через 5 секунд после клика
+    // isAlertPresent(5) — ждёт alert до 5 секунд, принимает его и возвращает true
     @Test
     public void waitAlertTest() {
-        sidePanel.selectAlerts();
-        alerts.verifyAlertWithTimer();  // ждёт алерт с таймером (~5 сек)
+        sidePanel.selectAlert();
+        alerts.verifyAlertWithTimer();
     }
 
+    // Тест: confirm alert с выбором Cancel
+    // Проверяем что текст результата содержит "Cancel"
     @Test
-    @DisplayName("Verify to -> 'Ok is displayed'")
+    @DisplayName("Verify to -> 'Cancel is displayed'")
     public void alertWithSelectResultTest() {
-        sidePanel.selectAlerts();
+        sidePanel.selectAlert();
         alerts.clickOnConfirmButton()
-                .selectResult("Ok")    // принимает confirm-алерт
-                .verifyResult("Ok");   // проверяет текст результата на странице
+                .selectResult("Cancel")
+                .verifyResult("Cancel");
     }
 
+    // Тест: prompt alert — вводим текст и проверяем что он отобразился
+    // sendMessageToAlert() — вводит текст в поле alert и нажимает OK
     @Test
     @DisplayName("Verify to -> 'Text you entered is displayed'")
     public void sendMessageToAlertTest() {
-        sidePanel.selectAlerts();
+        sidePanel.selectAlert();
         alerts.clickOnPromptButton()
-                .sendMessageToAlert("Hello world !")  // вводит текст в prompt и принимает
-                .verifyMessage("Hello world !");       // проверяет что текст появился на странице
+                .sendMessageToAlert("Hello World!")
+                .verifyMessage("Hello World!");
     }
 
+    // Тест: открытие новой вкладки и проверка её заголовка
+    // switchToNewTab(1) — переключаемся на вторую вкладку (index=1)
     @Test
     public void switchToNewTabTest() {
-        sidePanel.selectWindows();
-        windows.clickOnNewTabButton()
-                .switchToNewTab(1)                          // переключается на новую вкладку (index=1)
+        sidePanel.selectBrowserWindows();
+        new WindowsPage(driver).clickOnNewTabButton()
+                .switchToNewTab(1)
                 .verifyNewTabTitle("This is a sample page");
     }
 
+    // Тест: переключение в iframe по индексу
+    // switchToIframeByIndex(1) — переходим во второй iframe (index=1)
     @Test
     public void switchToNewIframeByIndex() {
         sidePanel.selectFrame();
         frame.returnListOfIframes()
-                .switchToIframeByIndex(1)                   // переключается во второй iframe (index=1)
+                .switchToIframeByIndex(1)
                 .verifyIframeByTitle("This is a sample page");
     }
 
+    // Тест: переключение в iframe по id, проверка заголовка, возврат на основную страницу
+    // switchToIframeById() — переходим в frame1 через WebElement
+    // switchToMainPage() — возвращаемся в основной DOM через defaultContent()
     @Test
     public void switchToIframeByIdTest() {
         sidePanel.selectFrame();
-        frame.switchToIframeById()                          // в iframe
+        frame.switchToIframeById()
                 .verifyIframeByTitle("This is a sample page")
-                .switchToMainPage()                         // назад в основной документ
-                .verifyMainPageTitle("Frames");             // проверяем элемент основного документа
-    }
-
-    // @Disabled — тест полностью пропускается при запуске. handleNestedFrames() пустой метод-заглушка.
-    @Disabled("Nested frames test is temporarily disabled")
-    @Test
-    public void nestedIframesTest() {
-        sidePanel.selectNestedFrames();
-        frame.handleNestedFrames();
+                .switchToMainPage() // возврат в основной DOM, не на главную страницу сайта
+                .verifyMainPageTitle("Frames");
     }
 }

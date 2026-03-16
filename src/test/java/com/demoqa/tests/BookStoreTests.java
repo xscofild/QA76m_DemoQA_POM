@@ -7,31 +7,27 @@ import com.demoqa.pages.bookStore.LoginPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * BookStoreTests — тесты для раздела Book Store.
- *
- * Обрати внимание: здесь нет полей SidePanel/LoginPage на уровне класса.
- * Объекты создаются прямо в теле теста и связываются цепочкой (Method Chaining).
- * Это чище когда тест линейный и объект нужен только в одном месте.
- *
- * Сравни с AlertsFrameWindowsTests где объекты — поля класса.
- * Оба подхода рабочие; поля класса удобны когда один объект используется в нескольких тестах.
- */
+// Тесты для раздела "Book Store Application"
+// Покрывает: позитивный тест логина с валидными данными
+// @BeforeEach — переходим в раздел Book Store
 public class BookStoreTests extends TestBase {
 
     @BeforeEach
     public void precondition() {
-        new HomePage(driver).selectBookStore(); // открываем раздел Book Store
+        new HomePage(driver).selectBookStore();
     }
 
+    // Тест: успешный логин с корректными данными
+    // Шаги:
+    //  1. Переходим на страницу Login через SidePanel
+    //  2. Вводим логин и пароль через enterUserData()
+    //  3. Нажимаем Login → открывается ProfilePage
+    //  4. Проверяем что имя пользователя отображается на странице профиля
     @Test
     public void loginPositiveTest() {
-        new SidePanel(driver).selectLogin();  // кликаем Login в боковом меню → переходим на LoginPage
-
-        // enterUserData → clickOnLoginButton (возвращает ProfilePage) → verifyUserName
-        new LoginPage(driver)
-                .enterUserData("xscofild", "Qwertz123!")
-                .clickOnLoginButton()   // → возвращает ProfilePage
-                .verifyUserName("xscofild");
+        new SidePanel(driver).selectLogin();
+        new LoginPage(driver).enterUserData("Olga2727", "Qwerty123!")
+                .clickOnLoginButton()
+                .verifyUserName("Olga2727");
     }
 }

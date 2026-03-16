@@ -6,90 +6,98 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-/**
- * AlertsPage — страница работы с браузерными алертами (alert / confirm / prompt).
- *
- * Все методы возвращают this (AlertsPage) → поддерживают Method Chaining в тесте.
- * Selenium работает с алертами через driver.switchTo().alert() — это отдельный контекст,
- * пока алерт открыт, нельзя взаимодействовать с элементами страницы.
- */
+// Страница "Alerts" в разделе Alerts, Frame & Windows
+// Демонстрирует три типа browser alerts:
+//  1. Timer Alert   — появляется через 5 секунд, только кнопка OK
+//  2. Confirm Alert — кнопки OK и Cancel
+//  3. Prompt Alert  — поле ввода текста + кнопки OK/Cancel
+// Для работы с alert используется driver.switchTo().alert() —
+// переключение контекста с DOM страницы на диалоговое окно браузера
 public class AlertsPage extends BasePage {
 
     public AlertsPage(WebDriver driver) {
         super(driver);
     }
 
+    // ─── Timer Alert ───────────────────────────────────────
+
+    // Кнопка которая вызывает alert через 5 секунд
     @FindBy(id = "timerAlertButton")
     WebElement timerAlertButton;
 
-    // Кнопка запускает алерт с задержкой (таймер на сайте ~5 сек).
-    // isAlertPresent(5) ждёт алерт 5 сек → если появился, принимает и возвращает true.
+    // Нажимает кнопку и ждёт появления alert до 5 секунд
+    // isAlertPresent(5) из BasePage — explicit wait на появление alert
     public AlertsPage verifyAlertWithTimer() {
         click(timerAlertButton);
         Assertions.assertTrue(isAlertPresent(5));
         return this;
     }
 
+    // ─── Confirm Alert ─────────────────────────────────────
+
+    // Кнопка которая вызывает confirm alert (OK / Cancel)
     @FindBy(id = "confirmButton")
     WebElement confirmButton;
 
+    // Кликает по кнопке confirm alert со скроллом
     public AlertsPage clickOnConfirmButton() {
         clickWithJS(confirmButton);
         return this;
     }
 
-    /**
-     * Принимает или отклоняет confirm-алерт в зависимости от параметра.
-     * accept() → нажимает "Ok", dismiss() → нажимает "Cancel".
-     * getAlert(3) — явное ожидание появления алерта, защита от гонки условий.
-     */
+    // Выбирает действие в confirm alert
+    // "Ok"     → accept()  — нажать кнопку OK
+    // "Cancel" → dismiss() — нажать кнопку Cancel
     public AlertsPage selectResult(String result) {
-        if ("Ok".equals(result)) {
-            getAlert(3).accept();
-        } else if ("Cancel".equals(result)) {
-            getAlert(3).dismiss();
+        if (result != null && result.equals("Ok")) {
+            driver.switchTo().alert().accept();
+        } else if (result != null && result.equals("Cancel")) {
+            driver.switchTo().alert().dismiss(); // dismiss() — нажимает Cancel
         }
         return this;
     }
 
+    // Элемент с текстом результата после confirm alert
     @FindBy(id = "confirmResult")
     WebElement confirmResult;
 
-    // Проверяет что на странице появился текст с результатом выбора (Ok/Cancel).
+    // Проверяет что текст результата содержит ожидаемую строку
     public AlertsPage verifyResult(String text) {
-        Assertions.assertTrue(shouldHaveText(confirmResult, text, 5));
+        Assertions.assertTrue(isContainsText(text, confirmResult));
         return this;
     }
 
-    @FindBy(id = "promtButton")
-    WebElement promtButton;  // опечатка в id на сайте — "promt" вместо "prompt", оставляем как есть
+    // ─── Prompt Alert ──────────────────────────────────────
 
+    // Кнопка которая вызывает prompt alert (поле ввода текста)
+    @FindBy(id = "promtButton") // намеренная опечатка в id на сайте demoqa
+    WebElement promtButton;
+
+    // Кликает по кнопке prompt alert со скроллом
     public AlertsPage clickOnPromptButton() {
         clickWithJS(promtButton);
         return this;
     }
 
-    /**
-     * Вводит текст в prompt-алерт и принимает его.
-     * getAlert(3).sendKeys() — вводит текст в поле алерта.
-     * driver.switchTo().alert().accept() — второй переход к алерту для принятия.
-     * Внимание: это два обращения к одному и тому же алерту — избыточно.
-     * Можно упростить: Alert a = getAlert(3); a.sendKeys(text); a.accept();
-     */
+    // Вводит текст в поле prompt alert и подтверждает
+    // driver.switchTo().alert() — переключаемся на диалоговое окно
+    // .sendKeys() — вводим текст в поле alert
+    // .accept()   — нажимаем OK
     public AlertsPage sendMessageToAlert(String text) {
         if (text != null) {
-            getAlert(3).sendKeys(text);
+            driver.switchTo().alert().sendKeys(text);
             driver.switchTo().alert().accept();
         }
         return this;
     }
 
+    // Элемент с текстом результата после prompt alert
     @FindBy(id = "promptResult")
     WebElement promptResult;
 
-    // Проверяет что введённый в алерт текст отобразился на странице.
+    // Проверяет что введённый текст отображается в результате
     public AlertsPage verifyMessage(String text) {
-        Assertions.assertTrue(shouldHaveText(promptResult, text, 5));
+        Assertions.assertTrue(isContainsText(text, promptResult));
         return this;
     }
 }

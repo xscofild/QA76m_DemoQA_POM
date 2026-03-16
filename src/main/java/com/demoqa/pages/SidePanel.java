@@ -5,6 +5,7 @@ import com.demoqa.pages.alertsFrameWindows.AlertsPage;
 import com.demoqa.pages.alertsFrameWindows.FramesPage;
 import com.demoqa.pages.alertsFrameWindows.WindowsPage;
 import com.demoqa.pages.bookStore.LoginPage;
+import com.demoqa.pages.elements.ButtonsPage;
 import com.demoqa.pages.widgets.MenuPage;
 import com.demoqa.pages.widgets.SelectPage;
 import com.demoqa.pages.widgets.SliderPage;
@@ -12,31 +13,30 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-/**
- * SidePanel — боковое меню навигации (одно на все разделы сайта).
- *
- * Структурно важно: SidePanel содержит элементы ВСЕХ разделов (Alerts, Widgets, BookStore и т.д.)
- * на одном классе. Это работает потому что @FindBy ищет элемент только в момент обращения к нему,
- * а не при создании объекта — если элемента нет на текущей странице, получим NoSuchElementException.
- *
- * Каждый select/get-метод:
- *   1. Кликает по пункту меню → переходит на страницу
- *   2. Создаёт и возвращает соответствующий Page Object → тест продолжает цепочку
- *
- * Если нужно добавить новый пункт меню — добавь @FindBy + метод по аналогии.
- * Если убрать метод — тест, который его вызывает, не скомпилируется.
- */
+// Боковое меню навигации — появляется после входа в любой раздел с HomePage
+// Каждый метод кликает по пункту меню и возвращает соответствующий Page Object
+// Это основа паттерна Page Object Model (POM) — каждая страница = отдельный класс
 public class SidePanel extends BasePage {
 
     public SidePanel(WebDriver driver) {
         super(driver);
     }
 
+    // ─── Book Store ────────────────────────────────────────
+
     @FindBy(xpath = "//span[.='Login']")
     WebElement login;
 
+    // ─── Elements ──────────────────────────────────────────
+
+    // xpath [.='Text Box'] — ищет элемент с точным текстом 'Text Box'
     @FindBy(xpath = "//span[.='Text Box']")
     WebElement textBox;
+
+    @FindBy(xpath = "//span[.='Buttons']")
+    WebElement buttons;
+
+    // ─── Alerts, Frame & Windows ───────────────────────────
 
     @FindBy(xpath = "//span[.='Alerts']")
     WebElement alerts;
@@ -47,8 +47,7 @@ public class SidePanel extends BasePage {
     @FindBy(xpath = "//span[.='Frames']")
     WebElement frames;
 
-    @FindBy(xpath = "//span[.='Nested Frames']")
-    WebElement nestedFrames;
+    // ─── Widgets ───────────────────────────────────────────
 
     @FindBy(xpath = "//span[.='Select Menu']")
     WebElement selectMenu;
@@ -59,51 +58,60 @@ public class SidePanel extends BasePage {
     @FindBy(xpath = "//span[.='Slider']")
     WebElement slider;
 
-    // Каждый метод возвращает Page Object той страницы, на которую ведёт пункт меню.
-    // Тип возврата жёстко связан с конкретной страницей — изменишь структуру сайта, нужно менять здесь.
+    // ─── Методы навигации ─────────────────────────────────
 
+    // Переход на страницу Login → возвращает LoginPage
     public LoginPage selectLogin() {
         clickWithJS(login);
         return new LoginPage(driver);
     }
 
+    // Переход на страницу Text Box → возвращает JSExecutor
+    // JSExecutor используется для демонстрации работы с JavaScript
     public JSExecutor selectTextBox() {
         clickWithJS(textBox);
         return new JSExecutor(driver);
     }
 
-    public AlertsPage selectAlerts() {
+    // Переход на страницу Alerts → возвращает AlertsPage
+    public AlertsPage selectAlert() {
         clickWithJS(alerts);
         return new AlertsPage(driver);
     }
 
-    public WindowsPage selectWindows() {
+    // Переход на страницу Browser Windows → возвращает WindowsPage
+    public WindowsPage selectBrowserWindows() {
         clickWithJS(browserWindows);
         return new WindowsPage(driver);
     }
 
+    // Переход на страницу Frames → возвращает FramesPage
     public FramesPage selectFrame() {
         clickWithJS(frames);
         return new FramesPage(driver);
     }
 
-    public FramesPage selectNestedFrames() {
-        clickWithJS(nestedFrames);
-        return new FramesPage(driver);  // тот же FramesPage — разные страницы, но один класс для обоих
-    }
-
+    // Переход на страницу Select Menu → возвращает SelectPage
     public SelectPage selectSelect() {
         clickWithJS(selectMenu);
         return new SelectPage(driver);
     }
 
+    // Переход на страницу Menu → возвращает MenuPage
     public MenuPage getMenu() {
         clickWithJS(menu);
         return new MenuPage(driver);
     }
 
+    // Переход на страницу Slider → возвращает SliderPage
     public SliderPage getSlider() {
         clickWithJS(slider);
         return new SliderPage(driver);
+    }
+
+    // Переход на страницу Buttons → возвращает ButtonsPage
+    public ButtonsPage getButtons() {
+        click(buttons);
+        return new ButtonsPage(driver);
     }
 }

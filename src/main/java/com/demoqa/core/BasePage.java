@@ -10,128 +10,128 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * BasePage — общий родитель для ВСЕХ Page Object классов.
- *
- * Содержит переиспользуемые утилиты: клики, скролл, ожидания, алерты, переключение вкладок.
- * Каждый Page Object extends BasePage → наследует driver + все методы ниже.
- *
- * Архитектурный принцип: логика взаимодействия с браузером живёт ЗДЕСЬ,
- * а не дублируется в каждом Page Object.
- */
+// Базовый класс для всех Page Object классов
+// Содержит общие методы: клики, ввод текста, скролл, ожидания, alerts, вкладки
+// Все Page классы наследуют BasePage и получают доступ к этим методам
 public class BasePage {
 
     protected WebDriver driver;
-    protected JavascriptExecutor js;     // для выполнения JS прямо в браузере
-    protected Actions actions;           // для сложных взаимодействий: hover, drag&drop, удержание клавиш
+    public static JavascriptExecutor js; // static — доступен из любого места без объекта
+    protected Actions actions;           // для сложных взаимодействий: hover, drag, двойной клик
 
-    /**
-     * Конструктор вызывается каждый раз, когда создаётся любой Page Object (new LoginPage(driver) и т.д.).
-     * PageFactory.initElements — сканирует поля класса с @FindBy и связывает их с реальными элементами страницы.
-     * Без initElements все @FindBy поля будут null → NullPointerException при обращении.
-     */
+    // Конструктор — вызывается при создании любой страницы
+    // PageFactory.initElements() — связывает @FindBy поля с реальными элементами страницы
     public BasePage(WebDriver driver) {
         this.driver = driver;
-        PageFactory.initElements(driver, this);  // обязательно! инициализирует все @FindBy в текущем классе
+        PageFactory.initElements(driver, this);
         js = (JavascriptExecutor) driver;
         actions = new Actions(driver);
     }
 
-    // Скроллит страницу так, чтобы элемент оказался по центру экрана.
-    // Используется перед кликом чтобы избежать ошибки "element not interactable" (элемент за пределами viewport).
+    // ─── СКРОЛЛ ───────────────────────────────────────────
+
+    // Прокручивает страницу к элементу через JavaScript
+    // arguments[0] — ссылка на WebElement передаваемый в JS
+    // scrollIntoView({block:'center'}) — помещает элемент в центр экрана
     public void scrollToElement(WebElement element) {
-        js.executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", element);
     }
 
-    /**
-     * JS-клик: сначала скроллит к элементу, потом кликает через JavaScript.
-     * Используй вместо обычного click() когда:
-     *   - элемент перекрыт другим (overlay, sticky header)
-     *   - Selenium бросает ElementClickInterceptedException
-     * Минус: обходит нативную логику браузера → не всегда триггерит JS-события элемента.
-     */
-    public void clickWithJS(WebElement element) {
-        scrollToElement(element);
-        js.executeScript("arguments[0].click();", element);
-    }
+    // ─── КЛИКИ ────────────────────────────────────────────
 
-    // Скроллит к элементу, затем вводит текст стандартным методом type().
-    public void typeWithJS(WebElement element, String text) {
-        scrollToElement(element);
-        type(element, text);
-    }
-
+    // Обычный клик по элементу
     public void click(WebElement element) {
         element.click();
     }
 
-    // Вводит текст: сначала click() для фокуса, clear() для очистки, потом sendKeys().
-    // Проверка text != null защищает от случайного вызова с null → не очищает поле впустую.
+    // Скролл к элементу через JS + клик через JS
+    // arguments[0].scrollIntoView — прокручиваем к элементу
+    // arguments[0].click()        — кликаем через JS
+    // Используется когда обычный click() не срабатывает
+    // (элемент перекрыт другим или вне зоны видимости)
+    public void clickWithJS(WebElement element) {
+        js.executeScript("arguments[0].scrollIntoView({block:'center'}); arguments[0].click();", element);
+    }
+
+    // ─── ВВОД ТЕКСТА ──────────────────────────────────────
+
+    // Клик по полю → очистка → ввод текста
+    // Пропускает если text == null
     public void type(WebElement element, String text) {
         if (text != null) {
-            click(element);
-            element.clear();
-            element.sendKeys(text);
+            click(element);         // кликаем чтобы поставить фокус
+            element.clear();        // очищаем поле
+            element.sendKeys(text); // вводим текст
         }
     }
 
-    // Фабричный метод. Создаёт WebDriverWait с заданным таймаутом.
-    // Используется внутри других методов (getAlert, shouldHaveText и т.д.).
+    // Скролл к элементу через JS + ввод текста
+    // Удобно для полей которые находятся вне зоны видимости
+    public void typeWithJS(WebElement element, String text) {
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", element);
+        type(element, text);
+    }
+
+    // ─── ОЖИДАНИЯ ─────────────────────────────────────────
+
+    // Создаёт явное ожидание на указанное количество секунд
+    // Explicit wait — ждёт конкретного условия, лучше чем Thread.sleep()
     public WebDriverWait getWait(int seconds) {
         return new WebDriverWait(driver, Duration.ofSeconds(seconds));
     }
 
-    // Ждёт появления alert максимум seconds секунд. Бросает TimeoutException если алерт не появился.
-    public Alert getAlert(int seconds) {
-        return getWait(seconds).until(ExpectedConditions.alertIsPresent());
+    // Ждёт появления текста в элементе, возвращает true когда текст появился
+    public boolean shouldHaveText(WebElement element, String text, int time) {
+        return getWait(time)
+                .until(ExpectedConditions.textToBePresentInElement(element, text));
     }
 
-    /**
-     * Проверяет наличие алерта: если появился — принимает (accept) и возвращает true.
-     * try/catch перехватывает TimeoutException если алерта нет → возвращает false.
-     * Внимание: метод ПРИНИМАЕТ алерт как побочный эффект — не используй если нужно только проверить наличие.
-     */
+    // ─── ALERTS ───────────────────────────────────────────
+
+    // Ждёт появления Alert и принимает его (нажимает OK)
+    // Возвращает true если alert появился, false если не появился за указанное время
     public boolean isAlertPresent(int seconds) {
-        try {
-            getAlert(seconds).accept();
-            return true;
-        } catch (TimeoutException e) {
+        Alert alert = getWait(seconds)
+                .until(ExpectedConditions.alertIsPresent());
+        if (alert == null) {
             return false;
+        } else {
+            driver.switchTo().alert().accept(); // switchTo() — переключаемся на alert и нажимаем OK
+            return true;
         }
     }
 
+    // ─── ВКЛАДКИ БРАУЗЕРА ─────────────────────────────────
+
+    // Переключается на вкладку браузера по индексу
+    // index=0 — первая вкладка, index=1 — вторая вкладка и т.д.
+    // Нужен когда тест открывает новые вкладки/окна
+    public void switchToNewTabWindow(int index) {
+        // getWindowHandles() — возвращает все открытые вкладки/окна
+        List<String> tabs = new ArrayList<>(driver.getWindowHandles());
+        driver.switchTo().window(tabs.get(index)); // переключаем фокус на нужную вкладку
+    }
+
+    // ─── ПРОВЕРКИ ЭЛЕМЕНТОВ ───────────────────────────────
+
+    // Проверяет что текст элемента содержит заданную строку
     public boolean isContainsText(String text, WebElement element) {
         return element.getText().contains(text);
     }
 
-    // Явное ожидание: ждёт пока текст text появится внутри element. Возвращает true/false.
-    // Безопаснее чем getText().contains() без ожидания — элемент может рендериться с задержкой.
-    public boolean shouldHaveText(WebElement element, String text, int time) {
-        return getWait(time).until(ExpectedConditions.textToBePresentInElement(element, text));
-    }
-
-    /**
-     * Переключается на вкладку/окно по индексу.
-     * getWindowHandles() возвращает Set (неупорядоченный!) → конвертируем в List чтобы получить по индексу.
-     * index=0 — исходная вкладка, index=1 — первая открытая новая вкладка.
-     * Внимание: порядок вкладок в Set не гарантирован в некоторых браузерах → тест может быть нестабильным.
-     */
-    public void switchToNewTabWindow(int index) {
-        List<String> tabs = new ArrayList<>(driver.getWindowHandles());
-        driver.switchTo().window(tabs.get(index));
-    }
-
-    // Безопасная проверка видимости: перехватывает NoSuchElementException если элемент вообще не найден в DOM.
-    // isDisplayed() сам по себе бросает исключение если элемента нет → этот метод делает проверку безопасной.
+    // Проверяет что элемент отображается на странице
+    // Возвращает false если элемент не найден (NoSuchElementException)
     public boolean isElementVisible(WebElement element) {
         try {
-            return element.isDisplayed();
+            element.isDisplayed();
+            return true;
         } catch (NoSuchElementException e) {
+            e.getMessage();
             return false;
         }
     }
 
-    // Явное ожидание видимости элемента. Блокирует выполнение до появления или до истечения time секунд.
+    // Ждёт пока элемент станет видимым на странице
     public void waitOfElementVisibility(WebElement element, int time) {
         getWait(time).until(ExpectedConditions.visibilityOf(element));
     }

@@ -6,24 +6,23 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-/**
- * ProfilePage — страница профиля после успешного логина.
- *
- * Минимальный Page Object: одна проверка — что имя пользователя отображается корректно.
- * shouldHaveText с таймаутом 5 сек нужен потому что страница профиля грузится после редиректа —
- * без ожидания тест может упасть, не дождавшись рендера элемента.
- */
+// Страница профиля пользователя в Book Store
+// Открывается после успешного логина через LoginPage
+// Используется для проверки что пользователь действительно залогинился
 public class ProfilePage extends BasePage {
 
     public ProfilePage(WebDriver driver) {
         super(driver);
     }
 
+    // Элемент отображающий имя залогиненного пользователя
     @FindBy(id = "userName-value")
-    WebElement userNameValue;
+    WebElement usernameValue;
 
+    // Проверяет что имя пользователя отображается на странице
+    // isContainsText() — проверяет что текст элемента содержит ожидаемую строку
     public ProfilePage verifyUserName(String name) {
-        Assertions.assertTrue(shouldHaveText(userNameValue, name, 5));
+        Assertions.assertTrue(isContainsText(name, usernameValue));
         return this;
     }
 }

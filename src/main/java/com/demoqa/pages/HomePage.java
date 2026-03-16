@@ -5,51 +5,51 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-/**
- * HomePage — стартовая страница demoqa.com.
- *
- * Точка входа в тест: отсюда навигируем в нужный раздел.
- * Каждый select-метод кликает по карточке раздела и возвращает SidePanel —
- * потому что после клика по карточке всегда открывается боковое меню (SidePanel).
- *
- * Паттерн: метод возвращает следующий Page Object → тест читается как цепочка шагов.
- */
+// Главная страница demoqa.com
+// Содержит карточки-категории: Elements, Alerts, Widgets, Book Store
+// Каждый метод кликает по карточке и возвращает SidePanel — боковое меню раздела
 public class HomePage extends BasePage {
 
     public HomePage(WebDriver driver) {
         super(driver);
     }
 
-    // XPath "//h5[text()='..']/.." — ищет h5 с текстом, потом берёт родителя (сама кликабельная карточка).
-    // Без /.. клик попадает на текст внутри карточки, а не на весь элемент — поведение может отличаться.
-
-    @FindBy(xpath = "//h5[text()='Book Store Application']/..")
+    // Карточка "Book Store Application" на главной странице
+    @FindBy(css = "a[href='/books']")
     WebElement bookStore;
 
-    @FindBy(xpath = "//h5[text()='Elements']/..")
+    // Карточка "Elements" на главной странице
+    @FindBy(css = "a[href='/elements']")
     WebElement elements;
 
-    @FindBy(xpath = "//h5[text()='Alerts, Frame & Windows']/..")
+    // Карточка "Alerts, Frame & Windows" на главной странице
+    @FindBy(css = "a[href='/alertsWindows']")
     WebElement alertsFrameWindows;
 
-    @FindBy(xpath = "//h5[normalize-space()='Widgets']/..")  // normalize-space() — обрезает пробелы в тексте
+    // Карточка "Widgets" на главной странице
+    // normalize-space() убирает лишние пробелы при поиске по тексту
+    @FindBy(xpath = "//h5[normalize-space()='Widgets']")
     WebElement widgets;
 
+    // Клик по карточке Book Store → возвращает SidePanel этого раздела
     public SidePanel selectBookStore() {
         clickWithJS(bookStore);
-        return new SidePanel(driver);  // SidePanel появляется после клика → сразу создаём и возвращаем
+        return new SidePanel(driver);
     }
 
+    // Клик по карточке Elements → возвращает SidePanel этого раздела
     public SidePanel selectElements() {
         clickWithJS(elements);
         return new SidePanel(driver);
     }
 
+    // Клик по карточке Alerts, Frame & Windows → возвращает SidePanel
     public SidePanel selectAlertsFrameWindows() {
         clickWithJS(alertsFrameWindows);
         return new SidePanel(driver);
     }
 
+    // Клик по карточке Widgets → возвращает SidePanel этого раздела
     public SidePanel selectWidgets() {
         clickWithJS(widgets);
         return new SidePanel(driver);

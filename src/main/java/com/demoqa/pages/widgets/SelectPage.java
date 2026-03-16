@@ -11,83 +11,91 @@ import org.openqa.selenium.support.Color;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 
-/**
- * SelectPage — страница Select Menu, демонстрирует три вида select:
- *   1. Нативный HTML <select> (oldStyleSelect)
- *   2. React-based multi-select (multiSelect)
- *   3. Стандартный <select> с проверкой цвета (verifySelectCarBy...)
- *
- * Нативный <select> → работаем через класс Select из Selenium.
- * React-select → НЕТ стандартного <select> в DOM → работаем через sendKeys в input.
- */
+// Страница "Select Menu" в разделе Widgets
+// Демонстрирует три типа select-элементов:
+//
+//  1. Old Style Select — стандартный HTML <select>
+//     Работаем через класс Select из Selenium
+//     Select.selectByVisibleText() — выбор по тексту опции
+//     Select.getFirstSelectedOption() — получить выбранную опцию
+//
+//  2. Multi Select (react-select) — кастомный React компонент
+//     НЕ является стандартным <select> — класс Select не подходит
+//     Работаем через sendKeys() + Enter для каждого значения
+//
+//  3. Standard Multi Select — стандартный HTML <select multiple>
+//     Проверяем цвет выбранной опции через getCssValue()
+//     Color.fromString().asHex() — конвертирует RGB → HEX формат
 public class SelectPage extends BasePage {
 
     public SelectPage(WebDriver driver) {
         super(driver);
     }
 
+    // Стандартный HTML <select> (старый стиль)
     @FindBy(id = "oldSelectMenu")
-    WebElement oldSelectMenu;  // нативный HTML <select>
+    WebElement oldSelectMenu;
 
+    // Поле ввода react-select для множественного выбора
     @FindBy(id = "react-select-4-input")
-    WebElement selectInput;    // скрытый input внутри React-select компонента
+    WebElement selectInput;
 
+    // Тег html — клик по пустому месту закрывает открытый dropdown
     @FindBy(css = "html")
-    WebElement space;          // клик по <html> закрывает выпадающий список React-select (имитация "клик в сторону")
+    WebElement space;
 
-    // Select — Selenium-класс для нативного <select>. Не работает с React/Vue/Angular дропдаунами!
+    // ─── Old Style Select ──────────────────────────────────
+
+    // Выбирает значение в стандартном HTML select по видимому тексту
+    // new Select(element) — обёртка Selenium для работы с тегом <select>
+    // selectByVisibleText() — выбор по тексту как он отображается в списке
     public SelectPage oldStyleSelect(String color) {
-        new Select(oldSelectMenu).selectByVisibleText(color);
+        Select select = new Select(oldSelectMenu);
+        select.selectByVisibleText(color);
         return this;
     }
 
-    public SelectPage verifyColor(String expectedColor) {
-        String actualColor = new Select(oldSelectMenu)
-                .getFirstSelectedOption()
-                .getText();
-        Assertions.assertEquals(expectedColor, actualColor);
+    // Проверяет что в select выбрано правильное значение
+    // getFirstSelectedOption() — возвращает первый выбранный <option>
+    // shouldHaveText() — ждёт появления текста с explicit wait
+    public SelectPage verifyColor() {
+        String firstSelectedOption = new Select(oldSelectMenu).getFirstSelectedOption().getText();
+        Assertions.assertTrue(shouldHaveText(oldSelectMenu, firstSelectedOption, 5));
         return this;
     }
 
-    /**
-     * Мультивыбор в React-select: вводим текст → Enter выбирает подсвеченный вариант.
-     * Каждая итерация: вводим название → Enter → React добавляет тег.
-     * click(space) после цикла — закрывает выпадающий список.
-     */
+    // ─── React Multi Select ────────────────────────────────
+
+    // Выбирает несколько значений в react-select
+    // Для каждого значения: вводим текст → нажимаем Enter для подтверждения
+    // click(space) — кликаем по пустому месту чтобы закрыть dropdown
     public SelectPage multiSelect(String[] colors) {
         for (String text : colors) {
             selectInput.sendKeys(text);
-            selectInput.sendKeys(Keys.ENTER);
+            selectInput.sendKeys(Keys.ENTER); // ENTER — подтвердить выбор текущего значения
         }
         click(space);
         return this;
     }
 
-    /**
-     * SoftAssertions — "мягкие" проверки: собирают ВСЕ ошибки и показывают их вместе в конце.
-     * В отличие от Assertions.assertTrue() который останавливается на первом фейле.
-     * assertAll() в конце — обязательно, иначе ошибки не будут выброшены.
-     */
+    // Проверяет все выбранные значения через SoftAssertions
+    // SoftAssertions — не останавливается на первой ошибке,
+    //   собирает все ошибки и выводит их вместе через assertAll()
+    // driver.findElement(By.xpath(...)) — ищем каждое значение на странице
     public SelectPage verifyMultiSelect(String[] colors) {
         SoftAssertions softly = new SoftAssertions();
-
         for (String text : colors) {
             WebElement element = driver.findElement(By.xpath("//*[.='" + text + "']"));
-            softly.assertThat(isContainsText(text, element))
-                    .as("Не найден выбранный цвет: " + text)
-                    .isTrue();
+            softly.assertThat(isContainsText(text, element)).isTrue();
         }
-
         softly.assertAll();
         return this;
     }
 
-    /**
-     * Проверяет цвет фона нативного <option> через getCssValue().
-     * getCssValue("background-color") возвращает цвет в формате "rgba(r, g, b, a)".
-     * Сравниваем contains(color) — значит color должен быть частью rgba строки.
-     * Хрупко: если формат браузера изменится → тест сломается. Лучше использовать verifySelectedCarByFormat.
-     */
+    // ─── Standard Multi Select (проверка цвета) ────────────
+
+    // Кликает по option по значению атрибута value и проверяет цвет через rgba
+    // getCssValue("background-color") — возвращает цвет в формате rgba(r, g, b, a)
     public SelectPage verifySelectCarByValue(String car, String color) {
         WebElement selectedCar = driver.findElement(By.cssSelector("[value='" + car + "']"));
         click(selectedCar);
@@ -95,13 +103,10 @@ public class SelectPage extends BasePage {
         return this;
     }
 
-    /**
-     * Надёжная версия проверки цвета: конвертирует rgba → HEX через Color.fromString().asHex().
-     * Позволяет сравнивать цвет в HEX формате (#1967d2) вместо "rgba(25, 103, 210, 1)".
-     * Color — Selenium-утилита (org.openqa.selenium.support.Color).
-     * Это предпочтительный способ сравнения цветов в тестах.
-     */
-    public SelectPage verifySelectedCarByFormat(String car, String color) {
+    // Кликает по option и проверяет цвет в HEX формате
+    // Color.fromString() — парсит rgba строку в объект Color
+    // .asHex() — конвертирует в #rrggbb формат для удобного сравнения
+    public SelectPage verifySelectCarByFormat(String car, String color) {
         WebElement selectedCar = driver.findElement(By.cssSelector("[value='" + car + "']"));
         click(selectedCar);
         String format = Color.fromString(selectedCar.getCssValue("background-color")).asHex();
