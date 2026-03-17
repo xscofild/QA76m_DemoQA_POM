@@ -6,6 +6,7 @@ import com.demoqa.pages.alertsFrameWindows.FramesPage;
 import com.demoqa.pages.alertsFrameWindows.WindowsPage;
 import com.demoqa.pages.bookStore.LoginPage;
 import com.demoqa.pages.elements.ButtonsPage;
+import com.demoqa.pages.forms.PracticeFormPage;
 import com.demoqa.pages.widgets.MenuPage;
 import com.demoqa.pages.widgets.SelectPage;
 import com.demoqa.pages.widgets.SliderPage;
@@ -13,105 +14,151 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-// Боковое меню навигации — появляется после входа в любой раздел с HomePage
-// Каждый метод кликает по пункту меню и возвращает соответствующий Page Object
-// Это основа паттерна Page Object Model (POM) — каждая страница = отдельный класс
+/**
+ * Боковое меню навигации — появляется после входа в любой раздел с HomePage.
+ *
+ * Каждый метод кликает по пункту меню и возвращает соответствующий Page Object.
+ * Это основа паттерна Page Object Model (POM): каждая страница = отдельный класс.
+ *
+ * XPath [.='Text'] ищет элемент с точным текстом — надёжнее, чем поиск по классу,
+ * который может меняться при обновлении сайта.
+ */
 public class SidePanel extends BasePage {
 
     public SidePanel(WebDriver driver) {
         super(driver);
     }
 
-    // ─── Book Store ────────────────────────────────────────
+    // ============================================================
+    // LOCATORS — раздел Elements
+    // ============================================================
 
-    @FindBy(xpath = "//span[.='Login']")
-    WebElement login;
-
-    // ─── Elements ──────────────────────────────────────────
-
-    // xpath [.='Text Box'] — ищет элемент с точным текстом 'Text Box'
     @FindBy(xpath = "//span[.='Text Box']")
-    WebElement textBox;
+    private WebElement textBox;
 
     @FindBy(xpath = "//span[.='Buttons']")
-    WebElement buttons;
+    private WebElement buttons;
 
-    // ─── Alerts, Frame & Windows ───────────────────────────
+    // ============================================================
+    // LOCATORS — раздел Alerts, Frame & Windows
+    // ============================================================
 
     @FindBy(xpath = "//span[.='Alerts']")
-    WebElement alerts;
+    private WebElement alerts;
 
     @FindBy(xpath = "//span[.='Browser Windows']")
-    WebElement browserWindows;
+    private WebElement browserWindows;
 
     @FindBy(xpath = "//span[.='Frames']")
-    WebElement frames;
+    private WebElement frames;
 
-    // ─── Widgets ───────────────────────────────────────────
+    // ============================================================
+    // LOCATORS — раздел Widgets
+    // ============================================================
 
     @FindBy(xpath = "//span[.='Select Menu']")
-    WebElement selectMenu;
+    private WebElement selectMenu;
 
     @FindBy(xpath = "//span[.='Menu']")
-    WebElement menu;
+    private WebElement menu;
 
     @FindBy(xpath = "//span[.='Slider']")
-    WebElement slider;
+    private WebElement slider;
 
-    // ─── Методы навигации ─────────────────────────────────
+    // ============================================================
+    // LOCATORS — раздел Book Store
+    // ============================================================
 
-    // Переход на страницу Login → возвращает LoginPage
-    public LoginPage selectLogin() {
-        clickWithJS(login);
-        return new LoginPage(driver);
-    }
+    @FindBy(xpath = "//span[.='Login']")
+    private WebElement login;
 
-    // Переход на страницу Text Box → возвращает JSExecutor
-    // JSExecutor используется для демонстрации работы с JavaScript
+    // ============================================================
+    // LOCATORS — раздел Forms
+    // ============================================================
+
+    @FindBy(xpath = "//span[text()='Practice Form']")
+    private WebElement practiceForm;
+
+    // ============================================================
+    // METHODS — раздел Elements
+    // ============================================================
+
+    /**
+     * Переход на Text Box.
+     * Возвращает JSExecutor — используется для демонстрации работы с JavaScript.
+     */
     public JSExecutor selectTextBox() {
         clickWithJS(textBox);
         return new JSExecutor(driver);
     }
 
-    // Переход на страницу Alerts → возвращает AlertsPage
+    /** Переход на страницу Buttons. */
+    public ButtonsPage getButtons() {
+        click(buttons);
+        return new ButtonsPage(driver);
+    }
+
+    // ============================================================
+    // METHODS — раздел Alerts, Frame & Windows
+    // ============================================================
+
+    /** Переход на страницу Alerts. */
     public AlertsPage selectAlert() {
         clickWithJS(alerts);
         return new AlertsPage(driver);
     }
 
-    // Переход на страницу Browser Windows → возвращает WindowsPage
+    /** Переход на страницу Browser Windows. */
     public WindowsPage selectBrowserWindows() {
         clickWithJS(browserWindows);
         return new WindowsPage(driver);
     }
 
-    // Переход на страницу Frames → возвращает FramesPage
+    /** Переход на страницу Frames. */
     public FramesPage selectFrame() {
         clickWithJS(frames);
         return new FramesPage(driver);
     }
 
-    // Переход на страницу Select Menu → возвращает SelectPage
+    // ============================================================
+    // METHODS — раздел Widgets
+    // ============================================================
+
+    /** Переход на страницу Select Menu. */
     public SelectPage selectSelect() {
         clickWithJS(selectMenu);
         return new SelectPage(driver);
     }
 
-    // Переход на страницу Menu → возвращает MenuPage
+    /** Переход на страницу Menu. */
     public MenuPage getMenu() {
         clickWithJS(menu);
         return new MenuPage(driver);
     }
 
-    // Переход на страницу Slider → возвращает SliderPage
+    /** Переход на страницу Slider. */
     public SliderPage getSlider() {
         clickWithJS(slider);
         return new SliderPage(driver);
     }
 
-    // Переход на страницу Buttons → возвращает ButtonsPage
-    public ButtonsPage getButtons() {
-        click(buttons);
-        return new ButtonsPage(driver);
+    // ============================================================
+    // METHODS — раздел Book Store
+    // ============================================================
+
+    /** Переход на страницу Login. */
+    public LoginPage selectLogin() {
+        clickWithJS(login);
+        return new LoginPage(driver);
+    }
+
+    // ============================================================
+    // METHODS — раздел Forms
+    // ============================================================
+
+    /** Переход на страницу Practice Form. */
+    public PracticeFormPage getPracticeForm() {
+        click(practiceForm);
+        return new PracticeFormPage(driver);
     }
 }

@@ -5,53 +5,75 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-// Главная страница demoqa.com
-// Содержит карточки-категории: Elements, Alerts, Widgets, Book Store
-// Каждый метод кликает по карточке и возвращает SidePanel — боковое меню раздела
+/**
+ * Page Object для главной страницы demoqa.com.
+ *
+ * Содержит карточки-категории: Elements, Forms, Alerts, Widgets, Book Store.
+ * Каждый метод кликает по карточке и возвращает SidePanel — боковое меню раздела.
+ *
+ * CSS-локаторы вида a[href='/forms'] надёжнее текстовых XPath на главной:
+ * href не меняется при локализации или рефакторинге вёрстки.
+ */
 public class HomePage extends BasePage {
 
     public HomePage(WebDriver driver) {
         super(driver);
     }
 
-    // Карточка "Book Store Application" на главной странице
-    @FindBy(css = "a[href='/books']")
-    WebElement bookStore;
+    // ============================================================
+    // LOCATORS
+    // ============================================================
 
-    // Карточка "Elements" на главной странице
     @FindBy(css = "a[href='/elements']")
-    WebElement elements;
+    private WebElement elements;
 
-    // Карточка "Alerts, Frame & Windows" на главной странице
+    @FindBy(css = "a[href='/forms']")
+    private WebElement forms;
+
     @FindBy(css = "a[href='/alertsWindows']")
-    WebElement alertsFrameWindows;
+    private WebElement alertsFrameWindows;
 
-    // Карточка "Widgets" на главной странице
-    // normalize-space() убирает лишние пробелы при поиске по тексту
+    /**
+     * normalize-space() в XPath убирает лишние пробелы при поиске по тексту.
+     * Используется здесь, потому что у карточки "Widgets" нет уникального href.
+     */
     @FindBy(xpath = "//h5[normalize-space()='Widgets']")
-    WebElement widgets;
+    private WebElement widgets;
 
-    // Клик по карточке Book Store → возвращает SidePanel этого раздела
-    public SidePanel selectBookStore() {
-        clickWithJS(bookStore);
-        return new SidePanel(driver);
-    }
+    @FindBy(css = "a[href='/books']")
+    private WebElement bookStore;
 
-    // Клик по карточке Elements → возвращает SidePanel этого раздела
+    // ============================================================
+    // METHODS
+    // ============================================================
+
+    /** Переход в раздел Elements. */
     public SidePanel selectElements() {
         clickWithJS(elements);
         return new SidePanel(driver);
     }
 
-    // Клик по карточке Alerts, Frame & Windows → возвращает SidePanel
+    /** Переход в раздел Forms. */
+    public SidePanel getForms() {
+        click(forms);
+        return new SidePanel(driver);
+    }
+
+    /** Переход в раздел Alerts, Frame & Windows. */
     public SidePanel selectAlertsFrameWindows() {
         clickWithJS(alertsFrameWindows);
         return new SidePanel(driver);
     }
 
-    // Клик по карточке Widgets → возвращает SidePanel этого раздела
+    /** Переход в раздел Widgets. */
     public SidePanel selectWidgets() {
         clickWithJS(widgets);
+        return new SidePanel(driver);
+    }
+
+    /** Переход в раздел Book Store. */
+    public SidePanel selectBookStore() {
+        clickWithJS(bookStore);
         return new SidePanel(driver);
     }
 }
