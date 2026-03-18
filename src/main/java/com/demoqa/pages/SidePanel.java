@@ -5,6 +5,7 @@ import com.demoqa.pages.alertsFrameWindows.AlertsPage;
 import com.demoqa.pages.alertsFrameWindows.FramesPage;
 import com.demoqa.pages.alertsFrameWindows.WindowsPage;
 import com.demoqa.pages.bookStore.LoginPage;
+import com.demoqa.pages.elements.BrokenLinksImagePage;
 import com.demoqa.pages.elements.ButtonsPage;
 import com.demoqa.pages.forms.PracticeFormPage;
 import com.demoqa.pages.widgets.MenuPage;
@@ -16,10 +17,10 @@ import org.openqa.selenium.support.FindBy;
 
 /**
  * Боковое меню навигации — появляется после входа в любой раздел с HomePage.
- *
+ * <p>
  * Каждый метод кликает по пункту меню и возвращает соответствующий Page Object.
  * Это основа паттерна Page Object Model (POM): каждая страница = отдельный класс.
- *
+ * <p>
  * XPath [.='Text'] ищет элемент с точным текстом — надёжнее, чем поиск по классу,
  * который может меняться при обновлении сайта.
  */
@@ -38,6 +39,12 @@ public class SidePanel extends BasePage {
 
     @FindBy(xpath = "//span[.='Buttons']")
     private WebElement buttons;
+
+    /**
+     * Broken Links - Images в разделе Elements
+     */
+    @FindBy(xpath = "//span[.='Broken Links - Images']")
+    private WebElement brokenLinksImages;
 
     // ============================================================
     // LOCATORS — раздел Alerts, Frame & Windows
@@ -96,6 +103,12 @@ public class SidePanel extends BasePage {
     public ButtonsPage getButtons() {
         click(buttons);
         return new ButtonsPage(driver);
+    }
+
+    /** Переход на страницу Broken Links - Images. */
+    public BrokenLinksImagePage getBrokenLinksImages() {
+        clickWithJS(brokenLinksImages);
+        return new BrokenLinksImagePage(driver);
     }
 
     // ============================================================

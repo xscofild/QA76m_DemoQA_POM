@@ -1,0 +1,19 @@
+<configuration>
+    <!-- Перехватываем Java Util Logging → SLF4J -->
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss} [%level] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Заглушить WARNING от Selenium CDP version mismatch -->
+    <logger name="org.openqa.selenium.devtools.CdpVersionFinder" level="ERROR"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

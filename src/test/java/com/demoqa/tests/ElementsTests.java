@@ -3,6 +3,7 @@ package com.demoqa.tests;
 import com.demoqa.core.TestBase;
 import com.demoqa.pages.HomePage;
 import com.demoqa.pages.SidePanel;
+import com.demoqa.pages.elements.BrokenLinksImagePage;
 import com.demoqa.pages.elements.ButtonsPage;
 import com.demoqa.pages.elements.TextBoxPage;
 import com.demoqa.utils.MyArgumentsProvider;
@@ -13,22 +14,30 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.net.MalformedURLException;
+
 // Тесты для раздела "Elements"
-// Покрывает: Double Click, Right Click, Copy-Paste через Actions
-// @BeforeEach — создаём Page Objects и переходим в раздел Elements
+// Покрывает: Double Click, Right Click, Copy-Paste, Text Box (3 варианта), Broken Links
+// @BeforeEach — инициализируем Page Objects и переходим в раздел Elements
 public class ElementsTests extends TestBase {
 
     SidePanel sidePanel;
     ButtonsPage buttonsPage;
     TextBoxPage textBoxPage;
+    BrokenLinksImagePage broken;
 
     @BeforeEach
     public void precondition() {
+        new HomePage(driver).selectElements();
         sidePanel = new SidePanel(driver);
         buttonsPage = new ButtonsPage(driver);
-        new HomePage(driver).selectElements();
         textBoxPage = new TextBoxPage(driver);
+        broken = new BrokenLinksImagePage(driver);
     }
+
+    // ============================================================
+    // TESTS — кнопки (Actions)
+    // ============================================================
 
     // Тест: двойной клик по кнопке
     // actions.doubleClick() — симулирует двойной клик мышью
@@ -41,7 +50,7 @@ public class ElementsTests extends TestBase {
     }
 
     // Тест: клик правой кнопкой мыши
-    // dispatchEvent contextmenu — надёжнее чем actions.contextClick()
+    // actions.contextClick() — симулирует правый клик мышью
     // Ожидаемый результат: появляется сообщение "right click"
     @Test
     public void rightClickTest() {
@@ -49,6 +58,10 @@ public class ElementsTests extends TestBase {
         buttonsPage.rightClick()
                 .verifyRightClick("right click");
     }
+
+    // ============================================================
+    // TESTS — Text Box
+    // ============================================================
 
     // Тест: копирование адреса через Ctrl+C и вставка через Ctrl+V
     // Шаги:
@@ -70,15 +83,11 @@ public class ElementsTests extends TestBase {
     @ParameterizedTest
     @ArgumentsSource(MyArgumentsProvider.class)
     public void textBoxWithArgumentsProviderTest(String name, String email, String address) {
-        // Открываем страницу Text Box через боковую панель навигации
         sidePanel.selectTextBox();
-
-        // Вводим имя, email и адрес в форму → отправляем → проверяем, что данные отобразились корректно
         textBoxPage.enterPersonalData(name, email, address)
                 .clickOnSubmitButton()
                 .verifyPersonalData(name, email, address);
     }
-
 
     // ===== ВАРИАНТ 2: данные прямо в аннотации @CsvSource =====
     // Удобно для небольшого количества наборов — данные видны прямо в тесте
@@ -89,15 +98,11 @@ public class ElementsTests extends TestBase {
             "Anna, anna@mail.com, Munich"
     })
     public void textBoxWithCsvSourceTest(String name, String email, String address) {
-        // Открываем страницу Text Box через боковую панель навигации
         sidePanel.selectTextBox();
-
-        // Вводим имя, email и адрес в форму → отправляем → проверяем, что данные отобразились корректно
         textBoxPage.enterPersonalData(name, email, address)
                 .clickOnSubmitButton()
                 .verifyPersonalData(name, email, address);
     }
-
 
     // ===== ВАРИАНТ 3: данные из внешнего CSV-файла =====
     // Данные хранятся в src/test/resources/PersonalData.csv
@@ -105,14 +110,28 @@ public class ElementsTests extends TestBase {
     @ParameterizedTest
     @CsvFileSource(resources = "/PersonalData.csv")
     public void textBoxWithCsvFileTest(String name, String email, String address) {
-        // Открываем страницу Text Box через боковую панель навигации
         sidePanel.selectTextBox();
-
-        // Вводим имя, email и адрес в форму → отправляем → проверяем, что данные отобразились корректно
         textBoxPage.enterPersonalData(name, email, address)
                 .clickOnSubmitButton()
                 .verifyPersonalData(name, email, address);
     }
 
+    // ============================================================
+    // TESTS — Broken Links
+    // ============================================================
 
+    // Тест: выводит в консоль все ссылки на странице (текст или href)
+    @Test
+    public void getAllLinksTest() {
+        sidePanel.getBrokenLinksImages();
+        broken.getAllLinks();
+    }
+
+    // Тест: проходит по всем ссылкам и проверяет их HTTP статус
+    // Результат выводится в консоль: OK / Redirect / Broken Link
+    @Test
+    public void checkBrokenLinksTest() throws MalformedURLException {
+        sidePanel.getBrokenLinksImages();
+        broken.checkBrokenLinks();
+    }
 }

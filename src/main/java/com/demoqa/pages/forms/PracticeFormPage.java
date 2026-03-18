@@ -1,6 +1,7 @@
 package com.demoqa.pages.forms;
 
 import com.demoqa.core.BasePage;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
@@ -8,20 +9,18 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 /**
  * Page Object для страницы "Practice Form" (раздел Forms на DemoQA).
- *
+ * <p>
  * Форма регистрации: имя, email, пол, телефон, дата рождения,
- * предметы, хобби, фото, адрес.
- *
+ * предметы, хобби, фото, адрес, штат, город.
+ * <p>
  * Все методы возвращают this для fluent-цепочки вызовов:
- *   new PracticeFormPages(driver)
- *       .fillForm(...)
- *       .selectGenderMale("Male")
- *       .clickSubmit()
- *       .verifyFormSubmitted();
+ * new PracticeFormPage(driver)
+ *     .fillForm(...)
+ *     .selectGender("Male")
+ *     .clickSubmit()
+ *     .verifyFormSubmitted("Thanks for submitting the form");
  */
 public class PracticeFormPage extends BasePage {
 
@@ -52,15 +51,21 @@ public class PracticeFormPage extends BasePage {
     // LOCATORS — выбор пола (radio скрыт стилями → клик по label)
     // ============================================================
 
-    /** Male   = gender-radio-1 */
+    /**
+     * Male   = gender-radio-1
+     */
     @FindBy(css = "label[for='gender-radio-1']")
     private WebElement genderMale;
 
-    /** Female = gender-radio-2 */
+    /**
+     * Female = gender-radio-2
+     */
     @FindBy(css = "label[for='gender-radio-2']")
     private WebElement genderFemale;
 
-    /** Other  = gender-radio-3 */
+    /**
+     * Other  = gender-radio-3
+     */
     @FindBy(xpath = "//label[@for='gender-radio-3']")
     private WebElement genderOther;
 
@@ -68,15 +73,29 @@ public class PracticeFormPage extends BasePage {
     // LOCATORS — React DatePicker
     // ============================================================
 
-    /** Поле ввода даты — клик открывает календарь */
+    /**
+     * Поле ввода даты — клик открывает календарь.
+     * Используется в selectDateOfBirth() для выбора через календарь.
+     */
     @FindBy(id = "dateOfBirthInput")
     private WebElement dateOfBirth;
 
-    /** Выпадающий список месяца внутри открытого календаря */
+    /**
+     * То же поле даты — используется в typeDateOfBirth() для ввода текстом.
+     * Два локатора на один элемент — разные стратегии работы с полем.
+     */
+    @FindBy(css = "#dateOfBirthInput")
+    private WebElement dateOfBirthInput;
+
+    /**
+     * Выпадающий список месяца внутри открытого календаря
+     */
     @FindBy(css = ".react-datepicker__month-select")
     private WebElement monthSelect;
 
-    /** Выпадающий список года внутри открытого календаря */
+    /**
+     * Выпадающий список года внутри открытого календаря
+     */
     @FindBy(css = ".react-datepicker__year-select")
     private WebElement yearSelect;
 
@@ -84,7 +103,9 @@ public class PracticeFormPage extends BasePage {
     // LOCATORS — предметы (Subjects)
     // ============================================================
 
-    /** Autocomplete-поле: вводим текст + Enter для добавления тега */
+    /**
+     * Autocomplete-поле: вводим текст + Enter для добавления тега
+     */
     @FindBy(id = "subjectsInput")
     private WebElement subjectsInput;
 
@@ -92,15 +113,21 @@ public class PracticeFormPage extends BasePage {
     // LOCATORS — хобби (checkbox скрыт стилями → клик по label)
     // ============================================================
 
-    /** Sports  = hobbies-checkbox-1 */
+    /**
+     * Sports  = hobbies-checkbox-1
+     */
     @FindBy(css = "label[for='hobbies-checkbox-1']")
     private WebElement hobbySports;
 
-    /** Reading = hobbies-checkbox-2 */
+    /**
+     * Reading = hobbies-checkbox-2
+     */
     @FindBy(css = "label[for='hobbies-checkbox-2']")
     private WebElement reading;
 
-    /** Music   = hobbies-checkbox-3 */
+    /**
+     * Music   = hobbies-checkbox-3
+     */
     @FindBy(css = "label[for='hobbies-checkbox-3']")
     private WebElement music;
 
@@ -119,22 +146,49 @@ public class PracticeFormPage extends BasePage {
     private WebElement submit;
 
     // ============================================================
-    // LOCATORS — модальное окно с результатами
+    // LOCATORS — штат и город (React Select — autocomplete)
     // ============================================================
 
-    /** Заголовок модалки, появляющейся после успешного Submit */
+    /**
+     * Поле ввода штата — React Select autocomplete.
+     * Вводим текст + Enter для выбора из выпадающего списка.
+     */
+    @FindBy(id = "react-select-3-input")
+    private WebElement stateInput;
+
+    /**
+     * Поле ввода города — React Select autocomplete.
+     * Становится активным только после выбора штата.
+     */
+    @FindBy(id = "react-select-4-input")
+    private WebElement cityInput;
+
+    // ============================================================
+    // LOCATORS — модальное окно и заголовок формы
+    // ============================================================
+
+    /**
+     * Заголовок модалки — появляется после успешного Submit.
+     * Используется в позитивном тесте: verifyFormSubmitted()
+     */
     @FindBy(id = "example-modal-sizes-title-lg")
     private WebElement modalTitle;
 
+    /**
+     * Заголовок формы — используется в негативном тесте.
+     * Если Submit не прошёл валидацию — форма остаётся на странице с этим заголовком.
+     */
+    @FindBy(xpath = "//h5")
+    private WebElement formTitle;
+
     // ============================================================
-    // ACTIONS
+    // ACTIONS — основные поля
     // ============================================================
 
     /**
      * Заполняет основные текстовые поля формы.
      */
-    public PracticeFormPage fillForm(String first, String last, String emailVal,
-                                     String phone, String address) {
+    public PracticeFormPage fillForm(String first, String last, String emailVal, String phone, String address) {
         type(firstName, first);
         type(lastName, last);
         type(email, emailVal);
@@ -142,6 +196,10 @@ public class PracticeFormPage extends BasePage {
         type(currentAddress, address);
         return this;
     }
+
+    // ============================================================
+    // ACTIONS — пол
+    // ============================================================
 
     /**
      * Выбирает пол через клик по label (radio-кнопки скрыты стилями).
@@ -158,6 +216,10 @@ public class PracticeFormPage extends BasePage {
         }
         return this;
     }
+
+    // ============================================================
+    // ACTIONS — дата рождения
+    // ============================================================
 
     /**
      * Выбирает дату рождения через React DatePicker:
@@ -178,23 +240,27 @@ public class PracticeFormPage extends BasePage {
         return this;
     }
 
-    // Альтернатива: ввод даты напрямую в поле (быстрее, но зависит от формата/браузера)
-    //
-    // @FindBy(css = "#dateOfBirthInput")
-    // private WebElement dateOfBirthInput;
-    //
-    // public PracticeFormPages typeDateOfBirth(String date) {
-    //     click(dateOfBirthInput);
-    //     String os = System.getProperty("os.name");
-    //     if (os.startsWith("Windows")) {
-    //         dateOfBirthInput.sendKeys(Keys.CONTROL, "a");
-    //     } else {
-    //         dateOfBirthInput.sendKeys(Keys.COMMAND, "a");
-    //     }
-    //     dateOfBirthInput.sendKeys(date);
-    //     dateOfBirthInput.sendKeys(Keys.ENTER);
-    //     return this;
-    // }
+    /**
+     * Альтернатива selectDateOfBirth() — ввод даты напрямую в поле.
+     * Быстрее, но зависит от формата браузера.
+     * Формат: "22 Feb 1996"
+     */
+    public PracticeFormPage typeDateOfBirth(String date) {
+        click(dateOfBirthInput);
+        String os = System.getProperty("os.name");
+        if (os.startsWith("Windows")) {
+            dateOfBirthInput.sendKeys(Keys.CONTROL, "a"); // выделить всё на Windows
+        } else {
+            dateOfBirthInput.sendKeys(Keys.COMMAND, "a"); // выделить всё на Mac
+        }
+        dateOfBirthInput.sendKeys(date);
+        dateOfBirthInput.sendKeys(Keys.ENTER);
+        return this;
+    }
+
+    // ============================================================
+    // ACTIONS — предметы
+    // ============================================================
 
     /**
      * Добавляет предметы в autocomplete-поле.
@@ -211,6 +277,10 @@ public class PracticeFormPage extends BasePage {
         return this;
     }
 
+    // ============================================================
+    // ACTIONS — хобби
+    // ============================================================
+
     /**
      * Выбирает хобби "Sports" (клик по label, checkbox скрыт стилями).
      */
@@ -221,7 +291,7 @@ public class PracticeFormPage extends BasePage {
 
     // Альтернатива: выбор нескольких хобби через массив
     //
-    // public PracticeFormPages selectHobby(String[] hobbies) {
+    // public PracticeFormPage selectHobby(String[] hobbies) {
     //     for (String hobby : hobbies) {
     //         if (hobby.equalsIgnoreCase("Sports"))  click(hobbySports);
     //         if (hobby.equalsIgnoreCase("Reading")) click(reading);
@@ -229,6 +299,10 @@ public class PracticeFormPage extends BasePage {
     //     }
     //     return this;
     // }
+
+    // ============================================================
+    // ACTIONS — загрузка файла
+    // ============================================================
 
     /**
      * Загружает файл через input[type='file'].
@@ -241,6 +315,35 @@ public class PracticeFormPage extends BasePage {
         uploadPicture.sendKeys(absoluteFilePath);
         return this;
     }
+
+    // ============================================================
+    // ACTIONS — штат и город
+    // ============================================================
+
+    /**
+     * Вводит название штата в React Select autocomplete и подтверждает Enter.
+     * Пример: "NCR"
+     */
+    public PracticeFormPage enterState(String state) {
+        stateInput.sendKeys(state);
+        stateInput.sendKeys(Keys.ENTER);
+        return this;
+    }
+
+    /**
+     * Вводит название города в React Select autocomplete и подтверждает Enter.
+     * Вызывать только после enterState() — поле активно только при выбранном штате.
+     * Пример: "Delhi"
+     */
+    public PracticeFormPage enterCity(String city) {
+        cityInput.sendKeys(city);
+        cityInput.sendKeys(Keys.ENTER);
+        return this;
+    }
+
+    // ============================================================
+    // ACTIONS — отправка формы
+    // ============================================================
 
     /**
      * Нажимает кнопку Submit через JavaScript (обходит возможное перекрытие баннерами DemoQA).
@@ -256,10 +359,20 @@ public class PracticeFormPage extends BasePage {
     // ============================================================
 
     /**
-     * Проверяет, что модальное окно с результатами появилось после Submit.
+     * Позитивный тест: проверяет что модальное окно появилось после успешного Submit.
+     * Ждёт появления заданного текста в заголовке модалки.
      */
-    public PracticeFormPage verifyFormSubmitted() {
-        assertTrue(modalTitle.isDisplayed(), "Модальное окно с результатами не появилось");
+    public PracticeFormPage verifyFormSubmitted(String title) {
+        Assertions.assertTrue(shouldHaveText(modalTitle, title, 10));
+        return this;
+    }
+
+    /**
+     * Негативный тест: проверяет что форма осталась на странице после невалидного Submit.
+     * Если валидация не прошла — модалка не появляется, форма остаётся видимой.
+     */
+    public PracticeFormPage verifyFromTitle() {
+        Assertions.assertTrue(isElementVisible(formTitle));
         return this;
     }
 }

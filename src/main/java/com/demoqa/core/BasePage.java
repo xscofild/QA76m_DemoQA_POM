@@ -6,12 +6,16 @@ import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 // Базовый класс для всех Page Object классов
-// Содержит общие методы: клики, ввод текста, скролл, ожидания, alerts, вкладки
+// Содержит общие методы: клики, ввод текста, скролл, ожидания, alerts, вкладки, проверка ссылок
 // Все Page классы наследуют BasePage и получают доступ к этим методам
 public class BasePage {
 
@@ -134,5 +138,34 @@ public class BasePage {
     // Ждёт пока элемент станет видимым на странице
     public void waitOfElementVisibility(WebElement element, int time) {
         getWait(time).until(ExpectedConditions.visibilityOf(element));
+    }
+
+    // ─── ПРОВЕРКА HTTP ССЫЛОК ─────────────────────────────
+
+    // Отправляет HTTP GET запрос на указанный URL и выводит статус в консоль.
+    // Используется в BrokenLinksImagePage.checkBrokenLinks() для обхода всех ссылок страницы.
+    //
+    // Результат в консоли:
+    //   код < 300   → рабочая ссылка (OK)
+    //   код 300-399 → редирект (Redirect Link + код)
+    //   код >= 400  → сломанная ссылка (Broken Link)
+    //   IOException → ошибка подключения (ERROR)
+    public void verifyLinks(String url) throws MalformedURLException {
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setConnectTimeout(5000); // таймаут подключения — 5 секунд
+            connection.connect();
+            int statusCode = connection.getResponseCode();
+
+            if (statusCode >= 400) {
+                System.out.println(url + " --> " + connection.getResponseMessage() + " is a Broken Link");
+            } else if (statusCode >= 300) {
+                System.out.println(url + " --> " + connection.getResponseMessage() + " is a Redirect Link. Status Code: " + statusCode);
+            } else {
+                System.out.println(url + " --> " + connection.getResponseMessage());
+            }
+        } catch (IOException e) {
+            System.out.println(url + " --> ERROR");
+        }
     }
 }

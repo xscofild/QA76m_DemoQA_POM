@@ -1,9 +1,11 @@
 package com.demoqa.core;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.time.Duration;
 
@@ -12,6 +14,20 @@ import java.time.Duration;
 public class TestBase {
 
     protected WebDriver driver;
+
+    // Флаг для управления закрытием браузера после теста
+    // true  — браузер закрывается (по умолчанию)
+    // false — браузер остаётся открытым (удобно для отладки)
+    protected boolean closeBrowser = true;
+
+    // Запускается ОДИН РАЗ перед всеми тестами
+    // Перехватывает Java Util Logging → SLF4J/Logback
+    // Убирает CDP version WARNING от Selenium
+    @BeforeAll
+    static void setupLogging() {
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+    }
 
     // Запускается ПЕРЕД каждым тестом
     // Открывает браузер, разворачивает на весь экран, переходит на сайт
@@ -24,11 +40,11 @@ public class TestBase {
     }
 
     // Запускается ПОСЛЕ каждого теста
-    // Закрывает браузер и освобождает ресурсы
+    // Закрывает браузер если closeBrowser == true
     // Проверка на null — защита если init() не выполнился
     @AfterEach
     public void tearDown() {
-        if (driver != null) {
+        if (closeBrowser && driver != null) {
             driver.quit();
         }
     }
