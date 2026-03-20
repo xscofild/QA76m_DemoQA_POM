@@ -16,7 +16,7 @@ public class JSElementsTests extends TestBase {
 
     @BeforeEach
     public void precondition() {
-        new HomePage(driver).selectElements();
+        new HomePage(driver).goToElements();
         sidePanel = new SidePanel(driver);
     }
 

@@ -21,7 +21,7 @@ public class AlertsFrameWindowsTests extends TestBase {
 
     @BeforeEach
     public void precondition() {
-        new HomePage(driver).selectAlertsFrameWindows();
+        new HomePage(driver).goToAlertsFrameWindows();
         sidePanel = new SidePanel(driver);
         alerts = new AlertsPage(driver);
         frame = new FramesPage(driver);

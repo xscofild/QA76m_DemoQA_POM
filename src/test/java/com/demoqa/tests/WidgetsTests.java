@@ -19,7 +19,7 @@ public class WidgetsTests extends TestBase {
 
     @BeforeEach
     public void precondition() {
-        new HomePage(driver).selectWidgets();
+        new HomePage(driver).goToWidgets();
         sidePanel = new SidePanel(driver);
         selectPage = new SelectPage(driver);
     }

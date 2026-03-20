@@ -14,7 +14,7 @@ public class BookStoreTests extends TestBase {
 
     @BeforeEach
     public void precondition() {
-        new HomePage(driver).selectBookStore();
+        new HomePage(driver).goToBookStore();
     }
 
     // Тест: успешный логин с корректными данными

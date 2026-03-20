@@ -1,5 +1,6 @@
 package com.demoqa.core;
 
+import org.assertj.core.api.SoftAssertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
@@ -20,8 +21,9 @@ import java.util.List;
 public class BasePage {
 
     protected WebDriver driver;
-    public static JavascriptExecutor js; // static — доступен из любого места без объекта
+    protected JavascriptExecutor js;      // protected — доступно в наследниках, private — только в этом классе
     protected Actions actions;           // для сложных взаимодействий: hover, drag, двойной клик
+    protected SoftAssertions softAssert; // для мягких проверок (soft assertions) в тестах
 
     // Конструктор — вызывается при создании любой страницы
     // PageFactory.initElements() — связывает @FindBy поля с реальными элементами страницы
@@ -30,6 +32,7 @@ public class BasePage {
         PageFactory.initElements(driver, this);
         js = (JavascriptExecutor) driver;
         actions = new Actions(driver);
+        softAssert = new SoftAssertions();
     }
 
     // ─── СКРОЛЛ ───────────────────────────────────────────
@@ -93,15 +96,15 @@ public class BasePage {
     // ─── ALERTS ───────────────────────────────────────────
 
     // Ждёт появления Alert и принимает его (нажимает OK)
-    // Возвращает true если alert появился, false если не появился за указанное время
+    // Возвращает true, если alert появился, иначе false
     public boolean isAlertPresent(int seconds) {
-        Alert alert = getWait(seconds)
-                .until(ExpectedConditions.alertIsPresent());
-        if (alert == null) {
-            return false;
-        } else {
-            driver.switchTo().alert().accept(); // switchTo() — переключаемся на alert и нажимаем OK
+        try {
+            Alert alert = getWait(seconds)
+                    .until(ExpectedConditions.alertIsPresent());
+            alert.accept();
             return true;
+        } catch (TimeoutException e) {
+            return false;
         }
     }
 
@@ -123,20 +126,19 @@ public class BasePage {
         return element.getText().contains(text);
     }
 
-    // Проверяет что элемент отображается на странице
-    // Возвращает false если элемент не найден (NoSuchElementException)
+    // Проверяет, отображается ли элемент на странице (isDisplayed)
+    // Если элемент отсутствует в DOM — ловим NoSuchElementException и возвращаем false
+    // Используется, когда нужно безопасно проверить наличие элемента без падения теста
     public boolean isElementVisible(WebElement element) {
         try {
-            element.isDisplayed();
-            return true;
+            return element.isDisplayed();
         } catch (NoSuchElementException e) {
-            e.getMessage();
             return false;
         }
     }
 
     // Ждёт пока элемент станет видимым на странице
-    public void waitOfElementVisibility(WebElement element, int time) {
+    public void waitForElementVisibility(WebElement element, int time) {
         getWait(time).until(ExpectedConditions.visibilityOf(element));
     }
 
@@ -150,22 +152,31 @@ public class BasePage {
     //   код 300-399 → редирект (Redirect Link + код)
     //   код >= 400  → сломанная ссылка (Broken Link)
     //   IOException → ошибка подключения (ERROR)
+
+    // Проверка HTTP ссылок с понятным выводом статуса
     public void verifyLinks(String url) throws MalformedURLException {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setConnectTimeout(5000); // таймаут подключения — 5 секунд
+            connection.setConnectTimeout(5000);
             connection.connect();
+
             int statusCode = connection.getResponseCode();
 
+            // Чёткий и понятный вывод: код + сообщение
             if (statusCode >= 400) {
-                System.out.println(url + " --> " + connection.getResponseMessage() + " is a Broken Link");
+                // Код 400 и выше — это ошибка, значит ссылка сломана
+                softAssert.fail(url + " --> " + connection.getResponseMessage() + " is  a Broken link");
             } else if (statusCode >= 300) {
-                System.out.println(url + " --> " + connection.getResponseMessage() + " is a Redirect Link. Status Code: " + statusCode);
+                // Код 300-399 — это редирект, ссылка работает, но ведёт на другой URL
+                softAssert.assertThat(statusCode).isLessThan(400);
             } else {
-                System.out.println(url + " --> " + connection.getResponseMessage());
+                // Код меньше 300 — это рабочая ссылка
+                softAssert.assertThat(statusCode).isLessThan(300);
             }
+
         } catch (IOException e) {
-            System.out.println(url + " --> ERROR");
+            // Если произошла ошибка подключения (например, URL недоступен), выводим понятное сообщение об ошибке
+            softAssert.fail(url + " --> ERROR: " + e.getMessage());
         }
     }
 }

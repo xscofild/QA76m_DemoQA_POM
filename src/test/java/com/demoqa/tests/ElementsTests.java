@@ -14,10 +14,8 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.net.MalformedURLException;
-
 // Тесты для раздела "Elements"
-// Покрывает: Double Click, Right Click, Copy-Paste, Text Box (3 варианта), Broken Links
+// Покрывает: Double Click, Right Click, Copy-Paste, Text Box (3 варианта), Broken Links, Broken Images
 // @BeforeEach — инициализируем Page Objects и переходим в раздел Elements
 public class ElementsTests extends TestBase {
 
@@ -28,7 +26,7 @@ public class ElementsTests extends TestBase {
 
     @BeforeEach
     public void precondition() {
-        new HomePage(driver).selectElements();
+        new HomePage(driver).goToElements();
         sidePanel = new SidePanel(driver);
         buttonsPage = new ButtonsPage(driver);
         textBoxPage = new TextBoxPage(driver);
@@ -117,7 +115,7 @@ public class ElementsTests extends TestBase {
     }
 
     // ============================================================
-    // TESTS — Broken Links
+    // TESTS — Broken Links & Images
     // ============================================================
 
     // Тест: выводит в консоль все ссылки на странице (текст или href)
@@ -130,8 +128,16 @@ public class ElementsTests extends TestBase {
     // Тест: проходит по всем ссылкам и проверяет их HTTP статус
     // Результат выводится в консоль: OK / Redirect / Broken Link
     @Test
-    public void checkBrokenLinksTest() throws MalformedURLException {
+    public void checkBrokenLinksTest() {
         sidePanel.getBrokenLinksImages();
         broken.checkBrokenLinks();
+    }
+
+    // Тест: проверяет все изображения на странице
+    // Выводит количество картинок, HTTP статус и статус загрузки каждой
+    @Test
+    public void checkBrokenImagesTest() {
+        sidePanel.getBrokenLinksImages();
+        broken.checkBrokenImages();
     }
 }

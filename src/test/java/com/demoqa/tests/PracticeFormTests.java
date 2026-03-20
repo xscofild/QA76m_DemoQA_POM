@@ -21,7 +21,7 @@ public class PracticeFormTests extends TestBase {
 
     @BeforeEach
     public void precondition() {
-        new HomePage(driver).getForms();
+        new HomePage(driver).goToForms();
         new SidePanel(driver).getPracticeForm();
     }
 

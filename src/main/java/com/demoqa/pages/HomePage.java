@@ -48,31 +48,31 @@ public class HomePage extends BasePage {
     // ============================================================
 
     /** Переход в раздел Elements. */
-    public SidePanel selectElements() {
+    public SidePanel goToElements() {
         clickWithJS(elements);
         return new SidePanel(driver);
     }
 
     /** Переход в раздел Forms. */
-    public SidePanel getForms() {
+    public SidePanel goToForms() {
         click(forms);
         return new SidePanel(driver);
     }
 
     /** Переход в раздел Alerts, Frame & Windows. */
-    public SidePanel selectAlertsFrameWindows() {
+    public SidePanel goToAlertsFrameWindows() {
         clickWithJS(alertsFrameWindows);
         return new SidePanel(driver);
     }
 
     /** Переход в раздел Widgets. */
-    public SidePanel selectWidgets() {
+    public SidePanel goToWidgets() {
         clickWithJS(widgets);
         return new SidePanel(driver);
     }
 
     /** Переход в раздел Book Store. */
-    public SidePanel selectBookStore() {
+    public SidePanel goToBookStore() {
         clickWithJS(bookStore);
         return new SidePanel(driver);
     }

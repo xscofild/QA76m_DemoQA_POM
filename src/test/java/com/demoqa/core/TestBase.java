@@ -34,9 +34,9 @@ public class TestBase {
     @BeforeEach
     public void init() {
         driver = new ChromeDriver();
-        driver.get("https://demoqa.com/");
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.get("https://demoqa.com/");
     }
 
     // Запускается ПОСЛЕ каждого теста

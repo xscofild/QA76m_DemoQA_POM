@@ -71,7 +71,7 @@ public class AlertsPage extends BasePage {
 
     // Кнопка которая вызывает prompt alert (поле ввода текста)
     @FindBy(id = "promtButton") // намеренная опечатка в id на сайте demoqa
-    WebElement promtButton;
+            WebElement promtButton;
 
     // Кликает по кнопке prompt alert со скроллом
     public AlertsPage clickOnPromptButton() {
